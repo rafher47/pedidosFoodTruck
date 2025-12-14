@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POS Food Truck</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden; /* pantalla fija */
+    }
+
+    /* Header con logos */
+    header {
+      background: #e63946;
+      color: white;
+      padding: 1rem;
+      display: flex;                  /* flexbox */
+      align-items: center;            /* centra verticalmente */
+      justify-content: space-between; /* izq - centro - der */
+    }
+    header h1 {
+      flex: 1;
+      text-align: center;
+      margin: 0;
+    }
+    header .logo {
+      width: 60px;
+      height: auto;
+    }
+
+    .menu {
+      /*height: calc(100vh - 200px);*/
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .menu-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .menu-header h2 { margin: 0; }
+    .menu-header button {
+      margin-left: 0.5rem;
+      background: #457b9d;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+    }
+    .menu-header button:hover { background: #1d3557; }
+
+    /* Grid responsivo */
+    .products {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+	  overflow-y:auto;
+	  padding-bottom:1em;
+    }
+	/* Estilo por defecto (PC) */
+	.menu {
+	  height: calc(100vh - 100px);
+	}
+
+	/* En móviles */
+	@media (max-width: 768px) {
+	  .menu {
+		height: calc(100vh - 200px);
+	  }
+	}
+	
+	
+    .item {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 0.5rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;		  
+    }
+    .item img {
+      width: 7em;
+      height: 7em;
+      object-fit: cover;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .controls {
+      display: flex; /* inicialmente oculto, se muestra al tocar imagen */
+      margin-top: 0.5rem;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .controls span { font-weight: bold; }
+    .controls button {
+      background: #457b9d;
+      color: white;
+      border: none;
+      padding: 0.25rem 0.5rem;
+      cursor: pointer;
+    }
+    .controls button:hover { background: #1d3557; }
+
+    /* Popup factura */
+    .popup {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+    }
+    .popup-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      width: 300px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+    .popup-content h3 { margin-top: 0; }
+    .close {
+      background: #e63946;
+      color: white;
+      border: none;
+      padding: 0.5rem;
+      cursor: pointer;
+      float: right;
+    }
+    .confirm {
+      margin-top: 1rem;
+      background: #2a9d8f;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      width: 100%;
+      border-radius: 6px;
+    }
+    .confirm:hover { background: #23867b; }
+
+    .payment-options {
+      display: flex;
+      gap: 1rem;
+      margin: 0.5rem 0 0.25rem;
+    }
+    .payment-options label {
+      cursor: pointer;
+      user-select: none;
+    }
+    #paymentDetails img {
+      display: block;
+      margin-top: 0.5rem;
+    }
+    #paymentDetails input[type="number"] {
+      width: 100%;
+      padding: 0.5rem;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    #changeText {
+      font-weight: bold;
+      margin-top: 0.5rem;
+    }
+	
+	/* Estilos para adicionales */
+    .adicionales { border:1px solid #ccc; border-radius:8px; padding:1rem; background:#f9f9f9; grid-column:1/-1; }
+    .adicionales h2 { margin-top:0; margin-bottom:0.5rem; }
+    .adicional-row { display:flex; justify-content:space-between; align-items:center; margin:0.25rem 0; }
+    .adicional-row .controls { margin:0; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="imagenes/logombirria.png" alt="Logo Izquierdo" class="logo">
+    <h1>PICADITAS MASTER BIRRIA</h1>
+    <img src="imagenes/logombirria.png" alt="Logo Derecho" class="logo">
+  </header>
+
+  <div class="menu">
+    <div class="menu-header">
+      <h2>Menú</h2>
+      <div>
+        <button onclick="generateInvoice()">Generar Factura</button>
+        <!-- Botón de compartir eliminado. Compartimos al confirmar pago -->
+      </div>
+    </div>
+    <div class="products" id="menuProducts"></div>
+  </div>
+
+  <!-- Popup Factura -->
+<div class="popup" id="popup">
+  <div class="popup-content">
+    <button class="close" onclick="closePopup()">X</button>
+    <div id="invoice"></div>
+
+    <!-- Nombre del cliente -->
+    <h3>Datos del cliente</h3>
+    <input type="text" id="clientName" placeholder="Nombre del cliente" style="width:100%; padding:0.5rem; margin-bottom:1rem;">
+
+    <!-- Selección de forma de pago -->
+    <h3>Forma de pago</h3>
+    <div class="payment-options">
+      <label><input type="radio" name="payment" value="yappy" onclick="showPayment()"> Yappy</label>
+      <label><input type="radio" name="payment" value="efectivo" onclick="showPayment()"> Efectivo</label>
+    </div>
+    <div id="paymentDetails" style="margin-top:0.5rem;"></div>
+
+    <button class="confirm" onclick="confirmPayment()">Confirmar pago y compartir</button>
+  </div>
+</div>
+  
+  
+  
+  <!--<div class="popup" id="popup">
+	<div class="popup-content">
+      <button class="close" onclick="closePopup()">X</button>
+      <div id="invoice"></div>
+
+      <h3>Forma de pago</h3>
+      <div class="payment-options">
+        <label><input type="radio" name="payment" value="yappy" onclick="showPayment()"> Yappy</label>
+        <label><input type="radio" name="payment" value="efectivo" onclick="showPayment()"> Efectivo</label>
+      </div>
+      <div id="paymentDetails" style="margin-top:0.5rem;"></div>
+
+      <button class="confirm" onclick="confirmPayment()">Confirmar pago y compartir</button>
+    </div>
+  </div>-->
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script>
+    // Productos actuales
+    const products = [
+      { id: 1, name: "HAMBURGUESA SENCILLA", price: 4, img: "imagenes/hsimple.jpg" , qty: 0},
+      { id: 2, name: "HAMBURGUESA COMPLETA", price: 6, img: "imagenes/hcompleta.jpg", qty: 0 },
+      { id: 3, name: "CHORIPAN ARGENTINO", price: 5, img: "imagenes/choripan.jpg" , qty: 0},
+      { id: 4, name: "HOT DOG TRADICIONAL", price: 2.5, img: "imagenes/pizza.png", qty: 0 },
+      { id: 5, name: "HOT DOG ESPECIAL", price: 3.5, img: "imagenes/hotdog.png" , qty: 0},
+      { id: 6, name: "10 ALITAS GRANDES", price: 10, img: "imagenes/nachos.png" , qty: 0},
+      { id: 7, name: "15 ALITAS GRANDES", price: 16.5, img: "imagenes/empanada.png", qty: 0 },
+      { id: 8, name: "20 ALITAS GRANDES", price: 20, img: "imagenes/alitas.png" , qty: 0},
+      { id: 9, name: "PICADITA PEQUEÑA", price: 3.5, img: "imagenes/helado.png", qty: 0 },
+      { id: 10, name: "PICADITA GRANDE", price: 5, img: "imagenes/helado.png", qty: 0 },
+      { id: 11, name: "PICADITA FAMILIAR", price: 15, img: "imagenes/helado.png", qty: 0 },
+	  { id: 12, name: "SALCHIPAPA", price: 2.5, img: "imagenes/salchipapa.png", qty: 0 },
+	  // Grupo de adicionales
+	  {
+		id: 13,
+		name: "ADICIONALES",
+		type: "group",
+		options: [
+		  { id: 131, name: "Papas", price: 1.5, img: "imagenes/papas.jpg", qty: 0 },
+		  { id: 132, name: "Salsa", price: 0.5, img: "imagenes/salsa.jpg", qty: 0 },
+		  { id: 133, name: "Salchicha", price: 2, img: "imagenes/salchicha.jpg", qty: 0 },
+		  { id: 134, name: "Chorizo", price: 2.5, img: "imagenes/chorizo.jpg", qty: 0 }
+		]
+	  }
+
+    ];
+
+    // Renderizado del menú
+    /*function renderMenu() {
+      const menu = document.getElementById("menuProducts");
+      menu.innerHTML = "";
+      products.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <h3 style="font-size: 0.8em; margin-block-start: 0.5em; margin-block-end: 0.5em;">${p.name}</h3>
+          <img src="${p.img}" alt="${p.name}" onclick="toggleControls(${p.id})">
+          <p style="margin-block-start: 0.5em; margin-block-end: 0.5em;">$${p.price.toFixed(2)}</p>
+          <div class="controls" id="controls-${p.id}">
+            <button onclick="updateQty(${p.id}, -1)">-</button>
+            <span id="qty-${p.id}">${p.qty}</span>
+            <button onclick="updateQty(${p.id}, 1)">+</button>
+          </div>
+        `;
+        menu.appendChild(div);
+      });
+    }*/
+function renderMenu() {
+      const menuDiv = document.getElementById("menuProducts");
+      menuDiv.innerHTML = "";
+
+      products.forEach(item => {
+        if (item.options) {
+          // Renderizar grupo de adicionales en un div listado
+          const groupDiv = document.createElement("div");
+          groupDiv.className = "adicionales";
+          groupDiv.innerHTML = `<h2>${item.name}</h2>`;
+
+          item.options.forEach(opt => {
+            const row = document.createElement("div");
+            row.className = "adicional-row";
+            row.innerHTML = `
+              <span>${opt.name} - $${opt.price.toFixed(2)}</span>
+              <div class="controls" id="controls-${opt.id}">
+                <button onclick="updateQty(${opt.id}, -1)">-</button>
+                <span id="qty-${opt.id}">${opt.qty}</span>
+                <button onclick="updateQty(${opt.id}, 1)">+</button>
+              </div>
+            `;
+            groupDiv.appendChild(row);
+          });
+
+          menuDiv.appendChild(groupDiv);
+
+        } else {
+          // Renderizar producto normal
+          const div = document.createElement("div");
+          div.className = "item";
+          div.innerHTML = `
+            <h3>${item.name}</h3>
+            <img src="${item.img}" alt="${item.name}">
+            <p>$${item.price.toFixed(2)}</p>
+            <div class="controls" id="controls-${item.id}">
+              <button onclick="updateQty(${item.id}, -1)">-</button>
+              <span id="qty-${item.id}">${item.qty}</span>
+              <button onclick="updateQty(${item.id}, 1)">+</button>
+            </div>
+          `;
+          menuDiv.appendChild(div);
+        }
+      });
+    }
+
+	/*function renderMenu() {
+	  const menuDiv = document.getElementById("menuProducts");
+	  menuDiv.innerHTML = "";
+
+	  products.forEach(item => {
+		if (item.options) {
+		  // Renderizar grupo de adicionales
+		  const groupTitle = document.createElement("h2");
+		  groupTitle.textContent = item.name;
+		  menuDiv.appendChild(groupTitle);
+
+		  item.options.forEach(opt => {
+			const div = document.createElement("div");
+			div.className = "item";
+			div.innerHTML = `
+			  <h3>${opt.name}</h3>
+			  <img src="${opt.img}" alt="${opt.name}" onclick="toggleControls(${opt.id})">
+			  <p>$${opt.price.toFixed(2)}</p>
+			  <div class="controls" id="controls-${opt.id}">
+				<button onclick="updateQty(${opt.id}, -1)">-</button>
+				<span id="qty-${opt.id}">${opt.qty}</span>
+				<button onclick="updateQty(${opt.id}, 1)">+</button>
+			  </div>
+			`;
+			menuDiv.appendChild(div);
+		  });
+		} else {
+		  // Renderizar producto normal
+		  const div = document.createElement("div");
+		  div.className = "item";
+		  div.innerHTML = `
+			<h3>${item.name}</h3>
+			<img src="${item.img}" alt="${item.name}" onclick="toggleControls(${item.id})">
+			<p>$${item.price.toFixed(2)}</p>
+			<div class="controls" id="controls-${item.id}">
+			  <button onclick="updateQty(${item.id}, -1)">-</button>
+			  <span id="qty-${item.id}">${item.qty}</span>
+			  <button onclick="updateQty(${item.id}, 1)">+</button>
+			</div>
+		  `;
+		  menuDiv.appendChild(div);
+		}
+	  });
+	}*/
+	
+    function toggleControls(id) {
+      const controls = document.getElementById(`controls-${id}`);
+      controls.style.display = controls.style.display === "flex" ? "none" : "flex";
+    }
+
+function updateQty(id, change) {
+      // Buscar en productos normales y adicionales
+      let product = products.find(p => p.id === id);
+      if (!product) {
+        products.forEach(p => {
+          if (p.options) {
+            const opt = p.options.find(o => o.id === id);
+            if (opt) product = opt;
+          }
+        });
+      }
+      if (product) {
+        product.qty = Math.max(0, product.qty + change);
+        document.getElementById(`qty-${id}`).textContent = product.qty;
+      }
+    }
+	
+    /*function updateQty(id, change) {
+      const product = products.find(p => p.id === id);
+      product.qty = Math.max(0, product.qty + change);
+      document.getElementById(`qty-${id}`).textContent = product.qty;
+    }*/
+
+    // Generar factura (abre popup)
+	function generateInvoice() {
+	  const invoice = document.getElementById('invoice');
+	  invoice.innerHTML = "<h3>Factura</h3>";
+	  let total = 0;
+	  
+	  products.forEach(item => {
+		if (item.options) {
+		  item.options.forEach(opt => {
+			if (opt.qty > 0) {
+			  total += opt.price * opt.qty;
+			  invoice.innerHTML += `<p>${opt.name} x${opt.qty} - $${(opt.price * opt.qty).toFixed(2)}</p>`;
+			}
+		  });
+		} else {
+		  if (item.qty > 0) {
+			total += item.price * item.qty;
+			invoice.innerHTML += `<p>${item.name} x${item.qty} - $${(item.price * item.qty).toFixed(2)}</p>`;
+		  }
+		}
+	  });
+	  invoice.innerHTML += `<hr><p><strong>Total: $${total.toFixed(2)}</strong></p>`;
+	  document.getElementById("popup").style.display = "flex";
+	  window.invoiceTotal = total;
+
+	  // Reset campos
+	  document.getElementById("clientName").value = "";
+	  const radios = document.querySelectorAll('input[name="payment"]');
+	  radios.forEach(r => r.checked = false);
+	  document.getElementById("paymentDetails").innerHTML = "";
+	}
+
+	function showPayment() {
+	  const selected = document.querySelector('input[name="payment"]:checked').value;
+	  const details = document.getElementById("paymentDetails");
+	  details.innerHTML = "";
+
+	  if (selected === "yappy") {
+		details.innerHTML = `
+		  <p>Realizar pago vía <strong>Yappy</strong></p>
+		  <p>Número: <strong>61988350</strong></p>
+		  <img src="imagenes/yappy.png" alt="Yappy" style="width:100px;">
+		`;
+	  } else if (selected === "efectivo") {
+		details.innerHTML = `
+		  <p>Ingrese monto recibido:</p>
+		  <input type="number" id="cashInput" placeholder="Monto recibido" oninput="calcChange()">
+		  <p id="changeText"></p>
+		`;
+	  }
+	}
+
+	function calcChange() {
+	  const received = parseFloat(document.getElementById("cashInput").value);
+	  const total = window.invoiceTotal || 0;
+	  if (!isNaN(received)) {
+		const change = received - total;
+		document.getElementById("changeText").textContent =
+		  change >= 0 ? `Cambio: $${change.toFixed(2)}` : "Monto insuficiente";
+	  } else {
+		document.getElementById("changeText").textContent = "";
+	  }
+	}
+
+	async function confirmPayment() {
+	  const selected = document.querySelector('input[name="payment"]:checked');
+	  const clientName = document.getElementById("clientName").value.trim();
+
+  if (!selected) {
+    alert("Seleccione una forma de pago.");
+    return;
+  }
+  if (!clientName) {
+    alert("Ingrese el nombre del cliente.");
+    return;
+  }
+
+  let paymentInfo = "";
+  if (selected.value === "efectivo") {
+    const received = parseFloat(document.getElementById("cashInput")?.value);
+    if (isNaN(received) || received < window.invoiceTotal) {
+      alert("Monto insuficiente para cubrir el total.");
+      return;
+    }
+    const change = received - window.invoiceTotal;
+    paymentInfo = `Pago en efectivo: recibido $${received.toFixed(2)}, cambio $${change.toFixed(2)}`;
+  } else {
+    paymentInfo = "Pago vía Yappy (61988350)";
+  }
+
+  // Añadir nombre y forma de pago al invoice antes de compartir
+  const invoice = document.getElementById('invoice');
+  invoice.innerHTML += `<hr><p><strong>Cliente:</strong> ${clientName}</p>`;
+  invoice.innerHTML += `<p><strong>Forma de pago:</strong> ${paymentInfo}</p>`;
+
+  // Generar imagen y compartir
+  const canvas = await html2canvas(invoice);
+  const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+  const file = new File([blob], "pedido.png", { type: "image/png" });
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        files: [file],
+        title: "Pedido Food Truck",
+        text: `Pedido de ${clientName} - ${paymentInfo}`
+      });
+    } catch (err) {
+      console.warn("Compartir cancelado o falló:", err);
+    }
+  } else {
+    // Fallback: descarga
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "pedido.png";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // Limpiar cantidades
+  products.forEach(p => p.qty = 0);
+  renderMenu();
+
+  // Cerrar popup
+  closePopup();
+
+  alert(`Pago confirmado ✅\nCliente: ${clientName}\n${paymentInfo}`);
+}
+	/*function generateInvoice() {
+      const invoice = document.getElementById('invoice');
+      invoice.innerHTML = "<h3>Factura</h3>";
+      let total = 0;
+      products.forEach(item => {
+        if (item.qty > 0) {
+          total += item.price * item.qty;
+          invoice.innerHTML += `<p>${item.name} x${item.qty} - $${(item.price * item.qty).toFixed(2)}</p>`;
+        }
+      });
+      invoice.innerHTML += `<hr><p><strong>Total: $${total.toFixed(2)}</strong></p>`;
+      document.getElementById("popup").style.display = "flex";
+      window.invoiceTotal = total;
+
+      // Limpiar selección previa de pago
+      const radios = document.querySelectorAll('input[name="payment"]');
+      radios.forEach(r => r.checked = false);
+      document.getElementById("paymentDetails").innerHTML = "";
+    }
+
+    function showPayment() {
+      const selected = document.querySelector('input[name="payment"]:checked').value;
+      const details = document.getElementById("paymentDetails");
+      details.innerHTML = "";
+
+      if (selected === "yappy") {
+        details.innerHTML = `
+          <p>Realizar pago vía <strong>Yappy</strong></p>
+          <p>Número: <strong>61988350</strong></p>
+          <img src="imagenes/yappy.png" alt="Yappy" style="width:100px;">
+        `;
+      } else if (selected === "efectivo") {
+        details.innerHTML = `
+          <p>Ingrese monto recibido:</p>
+          <input type="number" id="cashInput" placeholder="Monto recibido" oninput="calcChange()">
+          <p id="changeText"></p>
+        `;
+      }
+    }
+
+    function calcChange() {
+      const received = parseFloat(document.getElementById("cashInput").value);
+      const total = window.invoiceTotal || 0;
+      if (!isNaN(received)) {
+        const change = received - total;
+        document.getElementById("changeText").textContent =
+          change >= 0 ? `Cambio: $${change.toFixed(2)}` : "Monto insuficiente";
+      } else {
+        document.getElementById("changeText").textContent = "";
+      }
+    }
+
+    // Confirmar pago y compartir en el mismo gesto
+    async function confirmPayment() {
+      const selected = document.querySelector('input[name="payment"]:checked');
+      if (!selected) {
+        alert("Seleccione una forma de pago.");
+        return;
+      }
+
+      // Validación según forma de pago
+      let paymentInfo = "";
+      if (selected.value === "efectivo") {
+        const received = parseFloat(document.getElementById("cashInput")?.value);
+        if (isNaN(received) || received < window.invoiceTotal) {
+          alert("Monto insuficiente para cubrir el total.");
+          return;
+        }
+        const change = received - window.invoiceTotal;
+        paymentInfo = `Pago en efectivo: recibido $${received.toFixed(2)}, cambio $${change.toFixed(2)}`;
+      } else {
+        paymentInfo = "Pago vía Yappy (61988350)";
+      }
+
+      // Generar imagen y compartir (dentro del mismo click para evitar el error del gesto)
+      const invoice = document.getElementById('invoice');
+      const canvas = await html2canvas(invoice);
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+      const file = new File([blob], "pedido.png", { type: "image/png" });
+
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: "Pedido Food Truck",
+            text: "Aquí está tu pedido"
+          });
+        } catch (err) {
+          // Si el usuario cancela el compartir o hay error, continuamos con el flujo
+          console.warn("Compartir cancelado o falló:", err);
+        }
+      } else {
+        // Fallback: descargar imagen
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "pedido.png";
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      // Limpiar cantidades
+      products.forEach(p => p.qty = 0);
+      renderMenu();
+
+      // Cerrar popup
+      closePopup();
+
+      // Aviso de confirmación
+      alert(`Pago confirmado ✅\n${paymentInfo}`);
+    }*/
+
+    function closePopup() {
+      document.getElementById("popup").style.display = "none";
+    }
+
+    // Inicializar
+    renderMenu();
+  </script>
+</body>
+</html>
