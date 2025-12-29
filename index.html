@@ -3,661 +3,296 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>POS Food Truck</title>
+  <title>POS - Picaditas Master Birria</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      height: 100vh;
-      overflow: hidden; /* pantalla fija */
+    :root {
+      --primary: #e63946;
+      --secondary: #457b9d;
+      --bg: #f8f9fa;
+      --card-bg: #ffffff;
+      --accent: #2a9d8f;
     }
 
-    /* Header con logos */
-    header {
-      background: #e63946;
-      color: white;
-      padding: 1rem;
-      display: flex;                  /* flexbox */
-      align-items: center;            /* centra verticalmente */
-      justify-content: space-between; /* izq - centro - der */
+    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--bg); height: 100vh; overflow: hidden; }
+    
+    header { 
+      background: var(--primary); color: white; padding: 0.5rem 1rem; 
+      display: flex; align-items: center; justify-content: space-between;
     }
-    header h1 {
-      flex: 1;
-      text-align: center;
-      margin: 0;
-    }
-    header .logo {
-      width: 60px;
-      height: auto;
+    .logo { width: 35px; height: auto; }
+    h1 { font-size: 1rem; margin: 0; }
+
+    .container { padding: 0.8rem; height: calc(100vh - 60px); display: flex; flex-direction: column; }
+    .menu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .btn-invoice { background: var(--secondary); color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; font-weight: bold; cursor: pointer; }
+
+    .products-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px; overflow-y: auto; padding-bottom: 20px;
     }
 
-    .menu {
-      /*height: calc(100vh - 200px);*/
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
+    .card {
+      background: var(--card-bg); border-radius: 10px; padding: 8px;
+      display: flex; flex-direction: column; border: 1px solid #eee; height: 305px; align-items:center;
     }
-    .menu-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-    .menu-header h2 { margin: 0; }
-    .menu-header button {
-      margin-left: 0.5rem;
-      background: #457b9d;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      cursor: pointer;
-    }
-    .menu-header button:hover { background: #1d3557; }
+    .card img { width: 70%; height: 100px; border-radius: 5px; }
+    .card-title { font-size: 0.75rem; font-weight: bold; height: 30px; text-align: center; margin: 5px 0; display: flex; align-items: center; justify-content: center; }
+    
+    .card-price { color: var(--primary); font-weight: bold; text-align: center; font-size: 0.95rem; margin-bottom: 5px; min-height: 1.2rem; }
+    
+    .card-options { flex: 1; overflow-y: auto; font-size: 0.75rem; background: #f1f1f1; border-radius: 5px; padding: 4px; }
+    .option-row { border-bottom: 1px solid #ddd; padding: 5px 0; }
+    .controls { display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 5px; }
+    .controls button { background: var(--secondary); color: white; border: none; width: 24px; height: 24px; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
-    /* Grid responsivo */
-    .products {
-      flex: 1;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-	  overflow-y:auto;
-	  padding-bottom:1em;
+    /* POPUP */
+    .popup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
+    .popup-content { 
+      background: white; padding: 1.2rem; border-radius: 15px; width: 95%; max-width: 380px; 
+      display: flex; flex-direction: column; gap: 6px; position: relative;
     }
-	/* Estilo por defecto (PC) */
-	.menu {
-	  height: calc(100vh - 100px);
-	}
+    
+    .invoice-area { border: 1px solid #ddd; padding: 10px; background: white; font-size: 0.85rem; line-height: 1.2; }
+    .close-x { position: absolute; top: 10px; right: 15px; font-size: 1.8rem; border: none; background: none; cursor: pointer; color: #666; }
+    .input-row { display: flex; gap: 8px; margin-top: 5px; }
+    .input-group { flex: 1; }
+    .input-group label { font-size: 0.7rem; font-weight: bold; display: block; }
+    input { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 5px; font-size: 0.85rem; box-sizing: border-box; }
 
-	/* En móviles */
-	@media (max-width: 768px) {
-	  .menu {
-		height: calc(100vh - 200px);
-	  }
-	}
-	
-	
-    .item {
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 0.5rem;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: center;		  
-    }
-    .item img {
-      width: 7em;
-      height: 7em;
-      object-fit: cover;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .controls {
-      display: flex; /* inicialmente oculto, se muestra al tocar imagen */
-      margin-top: 0.5rem;
-      justify-content: center;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .controls span { font-weight: bold; }
-    .controls button {
-      background: #457b9d;
-      color: white;
-      border: none;
-      padding: 0.25rem 0.5rem;
-      cursor: pointer;
-    }
-    .controls button:hover { background: #1d3557; }
+    .payment-radios { display: flex; justify-content: space-between; margin: 5px 0; background: #f8f9fa; padding: 8px; border-radius: 8px; }
+    .payment-radios label { font-size: 0.8rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px; }
 
-    /* Popup factura */
-    .popup {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
-      justify-content: center;
-      align-items: center;
-    }
-    .popup-content {
-      background: white;
-      padding: 2rem;
-      border-radius: 10px;
-      width: 300px;
-      max-height: 80vh;
-      overflow-y: auto;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-    }
-    .popup-content h3 { margin-top: 0; }
-    .close {
-      background: #e63946;
-      color: white;
-      border: none;
-      padding: 0.5rem;
-      cursor: pointer;
-      float: right;
-    }
-    .confirm {
-      margin-top: 1rem;
-      background: #2a9d8f;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      cursor: pointer;
-      width: 100%;
-      border-radius: 6px;
-    }
-    .confirm:hover { background: #23867b; }
+    .msg-resaltado { font-size: 1.1rem; text-align: center; padding: 10px; border-radius: 8px; font-weight: bold; margin: 5px 0; border: 2px solid transparent; }
+    .msg-yappy { background: #e0f2fe; color: #0369a1; border-color: #0ea5e9; }
+    .msg-pendiente { background: #fff1f2; color: #be123c; border-color: #fb7185; }
 
-    .payment-options {
-      display: flex;
-      gap: 1rem;
-      margin: 0.5rem 0 0.25rem;
-    }
-    .payment-options label {
-      cursor: pointer;
-      user-select: none;
-    }
-    #paymentDetails img {
-      display: block;
-      margin-top: 0.5rem;
-    }
-    #paymentDetails input[type="number"] {
-      width: 100%;
-      padding: 0.5rem;
-      box-sizing: border-box;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-    #changeText {
-      font-weight: bold;
-      margin-top: 0.5rem;
-    }
-	
-	/* Estilos para adicionales */
-    .adicionales { border:1px solid #ccc; border-radius:8px; padding:1rem; background:#f9f9f9; grid-column:1/-1; }
-    .adicionales h2 { margin-top:0; margin-bottom:0.5rem; }
-    .adicional-row { display:flex; justify-content:space-between; align-items:center; margin:0.25rem 0; }
-    .adicional-row .controls { margin:0; }
+    .status-badge { text-align: center; font-weight: bold; font-size: 1rem; padding: 6px; border-radius: 4px; text-transform: uppercase; margin-top: 8px; }
+    .status-pendiente { background: #fee2e2; color: #dc2626; border: 1px solid #dc2626; }
+    .status-yappy { background: #e0f2fe; color: #0ea5e9; border: 1px solid #0ea5e9; }
+    .status-efectivo { background: #dcfce7; color: #16a34a; border: 1px solid #16a34a; }
+
+    .btn-confirm { background: var(--accent); color: white; border: none; padding: 0.9rem; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; margin-top: 5px; }
+
+    #toast { visibility: hidden; min-width: 200px; background: #333; color: #fff; text-align: center; border-radius: 5px; padding: 10px; position: fixed; z-index: 2000; left: 50%; bottom: 20px; transform: translateX(-50%); }
+    #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+    @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 20px; opacity: 1;} }
+    @keyframes fadeout { from {bottom: 20px; opacity: 1;} to {bottom: 0; opacity: 0;} }
   </style>
 </head>
 <body>
+
   <header>
-    <img src="imagenes/logombirria.png" alt="Logo Izquierdo" class="logo">
-    <h1>PICADITAS MASTER BIRRIA</h1>
-    <img src="imagenes/logombirria.png" alt="Logo Derecho" class="logo">
+    <img src="imagenes/logombirria.png" class="logo">
+    <h1>Master Birria POS</h1>
+    <img src="imagenes/logombirria.png" class="logo">
   </header>
 
-  <div class="menu">
+  <div class="container">
     <div class="menu-header">
-      <h2>Menú</h2>
-      <div>
-        <button onclick="generateInvoice()">Generar Factura</button>
-        <!-- Botón de compartir eliminado. Compartimos al confirmar pago -->
-      </div>
+      <h2 style="font-size: 0.9rem; margin:0;">Dashboard</h2>
+      <button class="btn-invoice" onclick="generateInvoice()">Ver Pedido</button>
     </div>
-    <div class="products" id="menuProducts"></div>
+    <div id="dashboard" class="products-grid"></div>
   </div>
 
-  <!-- Popup Factura -->
-<div class="popup" id="popup">
-  <div class="popup-content">
-    <button class="close" onclick="closePopup()">X</button>
-    <div id="invoice"></div>
-
-    <!-- Nombre del cliente -->
-    <h3>Datos del cliente</h3>
-    <input type="text" id="clientName" placeholder="Nombre del cliente" style="width:100%; padding:0.5rem; margin-bottom:1rem;">
-
-    <!-- Selección de forma de pago -->
-    <h3>Forma de pago</h3>
-    <div class="payment-options">
-      <label><input type="radio" name="payment" value="yappy" onclick="showPayment()"> Yappy</label>
-      <label><input type="radio" name="payment" value="efectivo" onclick="showPayment()"> Efectivo</label>
-    </div>
-    <div id="paymentDetails" style="margin-top:0.5rem;"></div>
-
-    <button class="confirm" onclick="confirmPayment()">Confirmar pago y compartir</button>
-  </div>
-</div>
-  
-  
-  
-  <!--<div class="popup" id="popup">
-	<div class="popup-content">
-      <button class="close" onclick="closePopup()">X</button>
-      <div id="invoice"></div>
-
-      <h3>Forma de pago</h3>
-      <div class="payment-options">
-        <label><input type="radio" name="payment" value="yappy" onclick="showPayment()"> Yappy</label>
-        <label><input type="radio" name="payment" value="efectivo" onclick="showPayment()"> Efectivo</label>
+  <div class="popup" id="popup">
+    <div class="popup-content">
+      <button class="close-x" onclick="document.getElementById('popup').style.display='none'">&times;</button>
+      <div id="invoice" class="invoice-area"></div>
+      <div class="input-row">
+        <div class="input-group">
+          <label>N° Pedido</label>
+          <input type="number" id="orderNum" placeholder="001">
+        </div>
+        <div class="input-group">
+          <label>Cliente</label>
+          <input type="text" id="clientName" placeholder="Nombre">
+        </div>
       </div>
-      <div id="paymentDetails" style="margin-top:0.5rem;"></div>
-
-      <button class="confirm" onclick="confirmPayment()">Confirmar pago y compartir</button>
+      <p style="font-size: 0.75rem; font-weight: bold; margin: 8px 0 2px 0;">FORMA DE PAGO:</p>
+      <div class="payment-radios">
+        <label><input type="radio" name="payment" value="yappy" onclick="updatePaymentUI()"> Yappy</label>
+        <label><input type="radio" name="payment" value="efectivo" onclick="updatePaymentUI()"> Efectivo</label>
+        <label><input type="radio" name="payment" value="pendiente" onclick="updatePaymentUI()"> Pendiente</label>
+      </div>
+      <div id="paymentArea" style="min-height: 50px;"></div>
+      <button class="btn-confirm" onclick="confirmAndShare()">Finalizar y Compartir</button>
     </div>
-  </div>-->
+  </div>
+
+  <div id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script>
-    // Productos actuales
     const products = [
-      { id: 1, name: "HAMBURGUESA SENCILLA", price: 4, img: "imagenes/hsimple.jpg" , qty: 0},
-      { id: 2, name: "HAMBURGUESA COMPLETA", price: 6, img: "imagenes/hcompleta.jpg", qty: 0 },
-      { id: 3, name: "CHORIPAN ARGENTINO", price: 5, img: "imagenes/choripan.jpg" , qty: 0},
-      { id: 4, name: "HOT DOG TRADICIONAL", price: 2.5, img: "imagenes/pizza.png", qty: 0 },
-      { id: 5, name: "HOT DOG ESPECIAL", price: 3.5, img: "imagenes/hotdog.png" , qty: 0},
-      { id: 6, name: "10 ALITAS GRANDES", price: 10, img: "imagenes/nachos.png" , qty: 0},
-      { id: 7, name: "15 ALITAS GRANDES", price: 16.5, img: "imagenes/empanada.png", qty: 0 },
-      { id: 8, name: "20 ALITAS GRANDES", price: 20, img: "imagenes/alitas.png" , qty: 0},
-      { id: 9, name: "PICADITA PEQUEÑA", price: 3.5, img: "imagenes/helado.png", qty: 0 },
-      { id: 10, name: "PICADITA GRANDE", price: 5, img: "imagenes/helado.png", qty: 0 },
-      { id: 11, name: "PICADITA FAMILIAR", price: 15, img: "imagenes/helado.png", qty: 0 },
-	  { id: 12, name: "SALCHIPAPA", price: 2.5, img: "imagenes/salchipapa.png", qty: 0 },
-	  // Grupo de adicionales
-	  {
-		id: 13,
-		name: "ADICIONALES",
-		type: "group",
-		options: [
-		  { id: 131, name: "Papas", price: 1.5, img: "imagenes/papas.jpg", qty: 0 },
-		  { id: 132, name: "Salsa", price: 0.5, img: "imagenes/salsa.jpg", qty: 0 },
-		  { id: 133, name: "Salchicha", price: 2, img: "imagenes/salchicha.jpg", qty: 0 },
-		  { id: 134, name: "Chorizo", price: 2.5, img: "imagenes/chorizo.jpg", qty: 0 }
-		]
-	  }
-
+      { id: 1, name: "HAMBURGUESA SENCILLA", price: 4, img: "imagenes/hsimple.png", qty: 0 },
+      { id: 2, name: "HAMBURGUESA COMPLETA", price: 6, img: "imagenes/hcompleta.png", qty: 0 },
+      { id: 3, name: "CHORIPAN ARGENTINO", price: 5, img: "imagenes/choripan.png", qty: 0 },
+      { id: 4, name: "HOT DOG TRADICIONAL", price: 2.5, img: "imagenes/hdtradicional.png", qty: 0 },
+      { id: 5, name: "HOT DOG ESPECIAL", price: 3.5, img: "imagenes/hdespecial.png", qty: 0 },
+      { id: 6, name: "10 ALITAS GRANDES", price: 10, img: "imagenes/alitas.png", qty: 0 },
+      { id: 7, name: "15 ALITAS GRANDES", price: 16.5, img: "imagenes/alitas.png", qty: 0 },
+      { id: 8, name: "20 ALITAS GRANDES", price: 20, img: "imagenes/alitas.png", qty: 0 },
+      { id: 9, name: "PICADITA PEQUEÑA", price: 3.5, img: "imagenes/ppequeña.png", qty: 0 },
+      { 
+        id: 10, name: "PICADITA GRANDE", type: "group", img: "imagenes/pgrande.png",
+        options: [
+          { id: 101, name: "CHORIZO-CARNE", price: 5, qty: 0 },
+          { id: 102, name: "CHORIZO-ALITAS", price: 5, qty: 0 },
+          { id: 103, name: "ALITAS-CARNE", price: 5, qty: 0 }
+        ]
+      },
+      { id: 11, name: "PICADITA FAMILIAR", price: 15, img: "imagenes/pfamiliar.png", qty: 0 },
+      { id: 12, name: "SALCHIPAPA", price: 4.5, img: "imagenes/salchipapa.png", qty: 0 },
+      {
+        id: 13, name: "ADICIONALES", type: "group", img: "",
+        options: [
+          { id: 131, name: "Papas", price: 1.5, qty: 0 },
+          { id: 132, name: "Chorizo", price: 2.5, qty: 0 },
+          { id: 133, name: "Salsa", price: 0.5, qty: 0 }
+        ]
+      }
     ];
 
-    // Renderizado del menú
-    /*function renderMenu() {
-      const menu = document.getElementById("menuProducts");
-      menu.innerHTML = "";
+    function renderDashboard() {
+      const db = document.getElementById("dashboard");
+      db.innerHTML = "";
       products.forEach(p => {
-        const div = document.createElement("div");
-        div.className = "item";
-        div.innerHTML = `
-          <h3 style="font-size: 0.8em; margin-block-start: 0.5em; margin-block-end: 0.5em;">${p.name}</h3>
-          <img src="${p.img}" alt="${p.name}" onclick="toggleControls(${p.id})">
-          <p style="margin-block-start: 0.5em; margin-block-end: 0.5em;">$${p.price.toFixed(2)}</p>
-          <div class="controls" id="controls-${p.id}">
-            <button onclick="updateQty(${p.id}, -1)">-</button>
-            <span id="qty-${p.id}">${p.qty}</span>
-            <button onclick="updateQty(${p.id}, 1)">+</button>
-          </div>
-        `;
-        menu.appendChild(div);
-      });
-    }*/
-function renderMenu() {
-      const menuDiv = document.getElementById("menuProducts");
-      menuDiv.innerHTML = "";
-
-      products.forEach(item => {
-        if (item.options) {
-          // Renderizar grupo de adicionales en un div listado
-          const groupDiv = document.createElement("div");
-          groupDiv.className = "adicionales";
-          groupDiv.innerHTML = `<h2>${item.name}</h2>`;
-
-          item.options.forEach(opt => {
-            const row = document.createElement("div");
-            row.className = "adicional-row";
-            row.innerHTML = `
-              <span>${opt.name} - $${opt.price.toFixed(2)}</span>
-              <div class="controls" id="controls-${opt.id}">
-                <button onclick="updateQty(${opt.id}, -1)">-</button>
-                <span id="qty-${opt.id}">${opt.qty}</span>
-                <button onclick="updateQty(${opt.id}, 1)">+</button>
-              </div>
-            `;
-            groupDiv.appendChild(row);
-          });
-
-          menuDiv.appendChild(groupDiv);
-
-        } else {
-          // Renderizar producto normal
-          const div = document.createElement("div");
-          div.className = "item";
-          div.innerHTML = `
-            <h3>${item.name}</h3>
-            <img src="${item.img}" alt="${item.name}">
-            <p>$${item.price.toFixed(2)}</p>
-            <div class="controls" id="controls-${item.id}">
-              <button onclick="updateQty(${item.id}, -1)">-</button>
-              <span id="qty-${item.id}">${item.qty}</span>
-              <button onclick="updateQty(${item.id}, 1)">+</button>
-            </div>
-          `;
-          menuDiv.appendChild(div);
-        }
-      });
-    }
-
-	/*function renderMenu() {
-	  const menuDiv = document.getElementById("menuProducts");
-	  menuDiv.innerHTML = "";
-
-	  products.forEach(item => {
-		if (item.options) {
-		  // Renderizar grupo de adicionales
-		  const groupTitle = document.createElement("h2");
-		  groupTitle.textContent = item.name;
-		  menuDiv.appendChild(groupTitle);
-
-		  item.options.forEach(opt => {
-			const div = document.createElement("div");
-			div.className = "item";
-			div.innerHTML = `
-			  <h3>${opt.name}</h3>
-			  <img src="${opt.img}" alt="${opt.name}" onclick="toggleControls(${opt.id})">
-			  <p>$${opt.price.toFixed(2)}</p>
-			  <div class="controls" id="controls-${opt.id}">
-				<button onclick="updateQty(${opt.id}, -1)">-</button>
-				<span id="qty-${opt.id}">${opt.qty}</span>
-				<button onclick="updateQty(${opt.id}, 1)">+</button>
-			  </div>
-			`;
-			menuDiv.appendChild(div);
-		  });
-		} else {
-		  // Renderizar producto normal
-		  const div = document.createElement("div");
-		  div.className = "item";
-		  div.innerHTML = `
-			<h3>${item.name}</h3>
-			<img src="${item.img}" alt="${item.name}" onclick="toggleControls(${item.id})">
-			<p>$${item.price.toFixed(2)}</p>
-			<div class="controls" id="controls-${item.id}">
-			  <button onclick="updateQty(${item.id}, -1)">-</button>
-			  <span id="qty-${item.id}">${item.qty}</span>
-			  <button onclick="updateQty(${item.id}, 1)">+</button>
-			</div>
-		  `;
-		  menuDiv.appendChild(div);
-		}
-	  });
-	}*/
-	
-    function toggleControls(id) {
-      const controls = document.getElementById(`controls-${id}`);
-      controls.style.display = controls.style.display === "flex" ? "none" : "flex";
-    }
-
-function updateQty(id, change) {
-      // Buscar en productos normales y adicionales
-      let product = products.find(p => p.id === id);
-      if (!product) {
-        products.forEach(p => {
-          if (p.options) {
-            const opt = p.options.find(o => o.id === id);
-            if (opt) product = opt;
+        const card = document.createElement("div");
+        card.className = "card";
+        let html = `<img src="${p.img}"><div class="card-title">${p.name}</div>`;
+        
+        if (p.type === "group") {
+          // Si es Picadita Grande, mostramos el precio principal arriba ($5.00)
+          if(p.name === "PICADITA GRANDE") {
+             html += `<div class="card-price">$${p.options[0].price.toFixed(2)}</div>`;
+          } else {
+             html += `<div class="card-price"></div>`; // Para Adicionales queda vacío
           }
-        });
-      }
-      if (product) {
-        product.qty = Math.max(0, product.qty + change);
-        document.getElementById(`qty-${id}`).textContent = product.qty;
-      }
-    }
-	
-    /*function updateQty(id, change) {
-      const product = products.find(p => p.id === id);
-      product.qty = Math.max(0, product.qty + change);
-      document.getElementById(`qty-${id}`).textContent = product.qty;
-    }*/
-
-    // Generar factura (abre popup)
-	function generateInvoice() {
-	  const invoice = document.getElementById('invoice');
-	  invoice.innerHTML = "<h3>Factura</h3>";
-	  let total = 0;
-	  
-	  products.forEach(item => {
-		if (item.options) {
-		  item.options.forEach(opt => {
-			if (opt.qty > 0) {
-			  total += opt.price * opt.qty;
-			  invoice.innerHTML += `<p>${opt.name} x${opt.qty} - $${(opt.price * opt.qty).toFixed(2)}</p>`;
-			}
-		  });
-		} else {
-		  if (item.qty > 0) {
-			total += item.price * item.qty;
-			invoice.innerHTML += `<p>${item.name} x${item.qty} - $${(item.price * item.qty).toFixed(2)}</p>`;
-		  }
-		}
-	  });
-	  invoice.innerHTML += `<hr><p><strong>Total: $${total.toFixed(2)}</strong></p>`;
-	  document.getElementById("popup").style.display = "flex";
-	  window.invoiceTotal = total;
-
-	  // Reset campos
-	  document.getElementById("clientName").value = "";
-	  const radios = document.querySelectorAll('input[name="payment"]');
-	  radios.forEach(r => r.checked = false);
-	  document.getElementById("paymentDetails").innerHTML = "";
-	}
-
-	function showPayment() {
-	  const selected = document.querySelector('input[name="payment"]:checked').value;
-	  const details = document.getElementById("paymentDetails");
-	  details.innerHTML = "";
-
-	  if (selected === "yappy") {
-		details.innerHTML = `
-		  <p>Realizar pago vía <strong>Yappy</strong></p>
-		  <p>Número: <strong>61988350</strong></p>
-		  <img src="imagenes/yappy.png" alt="Yappy" style="width:100px;">
-		`;
-	  } else if (selected === "efectivo") {
-		details.innerHTML = `
-		  <p>Ingrese monto recibido:</p>
-		  <input type="number" id="cashInput" placeholder="Monto recibido" oninput="calcChange()">
-		  <p id="changeText"></p>
-		`;
-	  }
-	}
-
-	function calcChange() {
-	  const received = parseFloat(document.getElementById("cashInput").value);
-	  const total = window.invoiceTotal || 0;
-	  if (!isNaN(received)) {
-		const change = received - total;
-		document.getElementById("changeText").textContent =
-		  change >= 0 ? `Cambio: $${change.toFixed(2)}` : "Monto insuficiente";
-	  } else {
-		document.getElementById("changeText").textContent = "";
-	  }
-	}
-
-	async function confirmPayment() {
-	  const selected = document.querySelector('input[name="payment"]:checked');
-	  const clientName = document.getElementById("clientName").value.trim();
-
-  if (!selected) {
-    alert("Seleccione una forma de pago.");
-    return;
-  }
-  if (!clientName) {
-    alert("Ingrese el nombre del cliente.");
-    return;
-  }
-
-  let paymentInfo = "";
-  if (selected.value === "efectivo") {
-    const received = parseFloat(document.getElementById("cashInput")?.value);
-    if (isNaN(received) || received < window.invoiceTotal) {
-      alert("Monto insuficiente para cubrir el total.");
-      return;
-    }
-    const change = received - window.invoiceTotal;
-    paymentInfo = `Pago en efectivo: recibido $${received.toFixed(2)}, cambio $${change.toFixed(2)}`;
-  } else {
-    paymentInfo = "Pago vía Yappy (61988350)";
-  }
-
-  // Añadir nombre y forma de pago al invoice antes de compartir
-  const invoice = document.getElementById('invoice');
-  invoice.innerHTML += `<hr><p><strong>Cliente:</strong> ${clientName}</p>`;
-  invoice.innerHTML += `<p><strong>Forma de pago:</strong> ${paymentInfo}</p>`;
-
-  // Generar imagen y compartir
-  const canvas = await html2canvas(invoice);
-  const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
-  const file = new File([blob], "pedido.png", { type: "image/png" });
-
-  if (navigator.share) {
-    try {
-      await navigator.share({
-        files: [file],
-        title: "Pedido Food Truck",
-        text: `Pedido de ${clientName} - ${paymentInfo}`
+          
+          html += `<div class="card-options">`;
+          p.options.forEach(o => {
+            html += `<div class="option-row" style="display:flex; flex-direction:column; gap:2px;">
+              <div style="display:flex; justify-content:space-between; font-weight:bold;">
+                <span>${o.name}</span>
+                ${p.name === "ADICIONALES" ? `<span style="color:var(--primary)">$${o.price.toFixed(2)}</span>` : ''}
+              </div>
+              <div class="controls">
+                <button onclick="updateQty(${o.id},-1)">-</button>
+                <span id="qty-${o.id}">${o.qty}</span>
+                <button onclick="updateQty(${o.id},1)">+</button>
+              </div>
+            </div>`;
+          });
+          html += `</div>`;
+        } else {
+          html += `<div class="card-price">$${p.price.toFixed(2)}</div>
+            <div class="controls" style="margin-top:auto;"><button onclick="updateQty(${p.id},-1)">-</button><span id="qty-${p.id}">${p.qty}</span><button onclick="updateQty(${p.id},1)">+</button></div>`;
+        }
+        card.innerHTML = html;
+        db.appendChild(card);
       });
-    } catch (err) {
-      console.warn("Compartir cancelado o falló:", err);
     }
-  } else {
-    // Fallback: descarga
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "pedido.png";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
 
-  // Limpiar cantidades
-  products.forEach(p => p.qty = 0);
-  renderMenu();
+    // Funciones de lógica de negocio (mantener igual que antes)
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.innerText = msg; t.className = "show";
+      setTimeout(() => t.className = "", 3000);
+    }
 
-  // Cerrar popup
-  closePopup();
-
-  alert(`Pago confirmado ✅\nCliente: ${clientName}\n${paymentInfo}`);
-}
-	/*function generateInvoice() {
-      const invoice = document.getElementById('invoice');
-      invoice.innerHTML = "<h3>Factura</h3>";
-      let total = 0;
-      products.forEach(item => {
-        if (item.qty > 0) {
-          total += item.price * item.qty;
-          invoice.innerHTML += `<p>${item.name} x${item.qty} - $${(item.price * item.qty).toFixed(2)}</p>`;
+    function updateQty(id, ch) {
+      products.forEach(p => {
+        if(p.id===id) p.qty = Math.max(0, p.qty+ch);
+        else if(p.options) {
+          let o = p.options.find(opt=>opt.id===id);
+          if(o) o.qty = Math.max(0, o.qty+ch);
         }
       });
-      invoice.innerHTML += `<hr><p><strong>Total: $${total.toFixed(2)}</strong></p>`;
-      document.getElementById("popup").style.display = "flex";
-      window.invoiceTotal = total;
-
-      // Limpiar selección previa de pago
-      const radios = document.querySelectorAll('input[name="payment"]');
-      radios.forEach(r => r.checked = false);
-      document.getElementById("paymentDetails").innerHTML = "";
+      const el = document.getElementById(`qty-${id}`);
+      if(el) el.innerText = getQty(id);
     }
 
-    function showPayment() {
-      const selected = document.querySelector('input[name="payment"]:checked').value;
-      const details = document.getElementById("paymentDetails");
-      details.innerHTML = "";
+    function getQty(id) {
+      let q = 0;
+      products.forEach(p => {
+        if(p.id===id) q=p.qty;
+        else if(p.options){ let o=p.options.find(opt=>opt.id===id); if(o) q=o.qty; }
+      });
+      return q;
+    }
 
-      if (selected === "yappy") {
-        details.innerHTML = `
-          <p>Realizar pago vía <strong>Yappy</strong></p>
-          <p>Número: <strong>61988350</strong></p>
-          <img src="imagenes/yappy.png" alt="Yappy" style="width:100px;">
-        `;
-      } else if (selected === "efectivo") {
-        details.innerHTML = `
-          <p>Ingrese monto recibido:</p>
-          <input type="number" id="cashInput" placeholder="Monto recibido" oninput="calcChange()">
-          <p id="changeText"></p>
-        `;
+    function updatePaymentUI() {
+      const mode = document.querySelector('input[name="payment"]:checked').value;
+      const area = document.getElementById("paymentArea");
+      if(mode === 'efectivo') {
+        area.innerHTML = `<input type="number" id="received" placeholder="¿Con cuánto paga?" oninput="calcChange()" style="margin-top:5px"><div id="changeTxt" style="font-size:0.85rem; font-weight:bold; margin-top:4px; text-align:center"></div>`;
+      } else if(mode === 'yappy') {
+        area.innerHTML = `<div class="msg-resaltado msg-yappy">TRANSFERIR A:<br>61988350</div>`;
+      } else {
+        area.innerHTML = `<div class="msg-resaltado msg-pendiente">PAGO POR COBRAR</div>`;
       }
     }
 
     function calcChange() {
-      const received = parseFloat(document.getElementById("cashInput").value);
-      const total = window.invoiceTotal || 0;
-      if (!isNaN(received)) {
-        const change = received - total;
-        document.getElementById("changeText").textContent =
-          change >= 0 ? `Cambio: $${change.toFixed(2)}` : "Monto insuficiente";
-      } else {
-        document.getElementById("changeText").textContent = "";
-      }
+      const r = parseFloat(document.getElementById("received").value);
+      const diff = r - window.currentTotal;
+      const txt = document.getElementById("changeTxt");
+      if(isNaN(r)) return txt.innerText = "";
+      txt.innerText = diff >= 0 ? `Cambio: $${diff.toFixed(2)}` : "Monto insuficiente";
+      txt.style.color = diff >= 0 ? "green" : "red";
     }
 
-    // Confirmar pago y compartir en el mismo gesto
-    async function confirmPayment() {
-      const selected = document.querySelector('input[name="payment"]:checked');
-      if (!selected) {
-        alert("Seleccione una forma de pago.");
-        return;
-      }
-
-      // Validación según forma de pago
-      let paymentInfo = "";
-      if (selected.value === "efectivo") {
-        const received = parseFloat(document.getElementById("cashInput")?.value);
-        if (isNaN(received) || received < window.invoiceTotal) {
-          alert("Monto insuficiente para cubrir el total.");
-          return;
+    function generateInvoice() {
+      const inv = document.getElementById("invoice");
+      const now = new Date();
+      let total = 0, has = false;
+      let html = `<div style="text-align:center"><strong>MASTER BIRRIA</strong><br><span id="orderTitle" style="font-size:0.9rem">ORDEN DE PEDIDO</span><br><span style="font-size:0.7rem">${now.toLocaleDateString()} ${now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span></div><hr style="margin:5px 0">`;
+      
+      products.forEach(p => {
+        if(p.options) {
+          p.options.forEach(o => { if(o.qty>0){ html+=`<div>${p.name} (${o.name}) x${o.qty} <span style="float:right">$${(o.price*o.qty).toFixed(2)}</span></div>`; total+=o.price*o.qty; has=true; }});
+        } else if(p.qty>0) {
+          html+=`<div>${p.name} x${p.qty} <span style="float:right">$${(p.price*p.qty).toFixed(2)}</span></div>`; total+=p.price*p.qty; has=true;
         }
-        const change = received - window.invoiceTotal;
-        paymentInfo = `Pago en efectivo: recibido $${received.toFixed(2)}, cambio $${change.toFixed(2)}`;
-      } else {
-        paymentInfo = "Pago vía Yappy (61988350)";
-      }
-
-      // Generar imagen y compartir (dentro del mismo click para evitar el error del gesto)
-      const invoice = document.getElementById('invoice');
-      const canvas = await html2canvas(invoice);
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
-      const file = new File([blob], "pedido.png", { type: "image/png" });
-
-      if (navigator.share) {
-        try {
-          await navigator.share({
-            files: [file],
-            title: "Pedido Food Truck",
-            text: "Aquí está tu pedido"
-          });
-        } catch (err) {
-          // Si el usuario cancela el compartir o hay error, continuamos con el flujo
-          console.warn("Compartir cancelado o falló:", err);
-        }
-      } else {
-        // Fallback: descargar imagen
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "pedido.png";
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-
-      // Limpiar cantidades
-      products.forEach(p => p.qty = 0);
-      renderMenu();
-
-      // Cerrar popup
-      closePopup();
-
-      // Aviso de confirmación
-      alert(`Pago confirmado ✅\n${paymentInfo}`);
-    }*/
-
-    function closePopup() {
-      document.getElementById("popup").style.display = "none";
+      });
+      
+      if(!has) return showToast("⚠️ Pedido vacío");
+      html += `<hr style="margin:5px 0"><div style="text-align:right"><strong>TOTAL: $${total.toFixed(2)}</strong></div>`;
+      inv.innerHTML = html;
+      window.currentTotal = total;
+      const rads = document.getElementsByName("payment");
+      for(let r of rads) r.checked = false;
+      document.getElementById("paymentArea").innerHTML = "";
+      document.getElementById("popup").style.display = "flex";
     }
 
-    // Inicializar
-    renderMenu();
+    async function confirmAndShare() {
+      const name = document.getElementById("clientName").value.trim();
+      const num = document.getElementById("orderNum").value.trim();
+      const payEl = document.querySelector('input[name="payment"]:checked');
+      if(!num || !name || !payEl) return showToast("❌ Completa todos los datos");
+      const mode = payEl.value;
+      const inv = document.getElementById("invoice");
+      document.getElementById("orderTitle").innerText = `ORDEN DE PEDIDO #${num}`;
+      inv.innerHTML += `<div style="margin-top:5px"><strong>CLIENTE:</strong> ${name.toUpperCase()}</div>`;
+      if(mode === 'yappy') inv.innerHTML += `<div class="status-badge status-yappy">PAGADO CON YAPPY</div>`;
+      else if(mode === 'pendiente') inv.innerHTML += `<div class="status-badge status-pendiente">PAGO PENDIENTE</div>`;
+      else {
+        const r = parseFloat(document.getElementById("received").value) || 0;
+        if(r < window.currentTotal) return showToast("❌ Monto insuficiente");
+        inv.innerHTML += `<div style="background:#f1f1f1; padding:5px; margin-top:5px; font-size:0.75rem">Recibido: $${r.toFixed(2)} | Cambio: $${(r-window.currentTotal).toFixed(2)}</div><div class="status-badge status-efectivo">PAGO EN EFECTIVO</div>`;
+      }
+      showToast("📸 Compartiendo...");
+      const canvas = await html2canvas(inv, { scale: 2 });
+      const blob = await new Promise(res => canvas.toBlob(res));
+      const file = new File([blob], `Orden_${num}.png`, {type:"image/png"});
+      if(navigator.share) await navigator.share({ files: [file] });
+      else { const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`Orden_${num}.png`; a.click(); }
+      location.reload();
+    }
+
+    renderDashboard();
   </script>
 </body>
 </html>
