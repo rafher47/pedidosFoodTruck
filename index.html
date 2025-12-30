@@ -2,8 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>POS - Picaditas Master Birria</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Master Birria POS</title>
   <style>
     :root {
       --primary: #e63946;
@@ -13,84 +13,70 @@
       --accent: #2a9d8f;
     }
 
-    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--bg); height: 100vh; overflow: hidden; }
+    html, body { 
+      margin: 0; padding: 0; height: 100%; width: 100%;
+      overflow: hidden; overscroll-behavior-y: contain; 
+      user-select: none; -webkit-user-select: none;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--bg);
+    }
     
     header { 
-      background: var(--primary); color: white; padding: 0.5rem 1rem; 
+      background: var(--primary); color: white; padding: 0 1rem; 
       display: flex; align-items: center; justify-content: space-between;
+      height: 60px;
     }
     .logo { width: 35px; height: auto; }
-    h1 { font-size: 1rem; margin: 0; }
+    h1 { font-size: 1.1rem; margin: 0; }
 
-    .container { padding: 0.8rem; height: calc(100vh - 60px); display: flex; flex-direction: column; }
-    .menu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
-    .btn-invoice { background: var(--secondary); color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; font-weight: bold; cursor: pointer; }
-
+    .container { padding: 10px; height: calc(100% - 80px); display: flex; flex-direction: column; }
     .products-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 10px; overflow-y: auto; padding-bottom: 20px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+      gap: 12px; overflow-y: auto; padding-bottom: 60px; -webkit-overflow-scrolling: touch;
     }
 
-    .card {
-      background: var(--card-bg); border-radius: 10px; padding: 8px;
-      display: flex; flex-direction: column; border: 1px solid #eee; height: 305px; align-items:center;
+    .card { 
+      background: var(--card-bg); border-radius: 12px; padding: 10px; 
+      border: 1px solid #eee; height: 320px; display: flex; flex-direction: column;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
     }
-    .card img { width: 70%; height: 100px; border-radius: 5px; }
-    .card-title { font-size: 0.75rem; font-weight: bold; height: 30px; text-align: center; margin: 5px 0; display: flex; align-items: center; justify-content: center; }
+    .card img { width: 100%; height: 85px; object-fit: cover; border-radius: 8px; }
+    .card-title { font-size: 0.75rem; font-weight: bold; height: 35px; text-align: center; margin: 5px 0; display: flex; align-items: center; justify-content: center; }
+    .card-price { color: var(--primary); font-weight: bold; text-align: center; font-size: 1rem; margin-bottom: 5px; min-height: 1.2rem; }
     
-    .card-price { color: var(--primary); font-weight: bold; text-align: center; font-size: 0.95rem; margin-bottom: 5px; min-height: 1.2rem; }
+    .card-options { flex: 1; overflow-y: auto; font-size: 0.7rem; background: #f3f3f3; border-radius: 6px; padding: 5px; }
+    .option-row { border-bottom: 1px solid #ddd; padding: 6px 0; }
+    .controls { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 5px; }
+    .controls button { background: var(--secondary); color: white; border: none; width: 32px; height: 32px; border-radius: 6px; font-weight: bold; font-size: 1.2rem; }
+
+    .popup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 1000; }
+    .popup-content { background: white; padding: 1.5rem; border-radius: 20px; width: 90%; max-width: 380px; position: relative; }
     
-    .card-options { flex: 1; overflow-y: auto; font-size: 0.75rem; background: #f1f1f1; border-radius: 5px; padding: 4px; }
-    .option-row { border-bottom: 1px solid #ddd; padding: 5px 0; }
-    .controls { display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 5px; }
-    .controls button { background: var(--secondary); color: white; border: none; width: 24px; height: 24px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-
-    /* POPUP */
-    .popup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
-    .popup-content { 
-      background: white; padding: 1.2rem; border-radius: 15px; width: 95%; max-width: 380px; 
-      display: flex; flex-direction: column; gap: 6px; position: relative;
-    }
+    .invoice-area { border: 1px solid #ccc; padding: 15px; background: white; font-size: 0.9rem; color: #000; border-radius: 5px; }
+    .close-x { position: absolute; top: 10px; right: 15px; font-size: 2.5rem; border: none; background: none; color: #999; }
     
-    .invoice-area { border: 1px solid #ddd; padding: 10px; background: white; font-size: 0.85rem; line-height: 1.2; }
-    .close-x { position: absolute; top: 10px; right: 15px; font-size: 1.8rem; border: none; background: none; cursor: pointer; color: #666; }
-    .input-row { display: flex; gap: 8px; margin-top: 5px; }
-    .input-group { flex: 1; }
-    .input-group label { font-size: 0.7rem; font-weight: bold; display: block; }
-    input { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 5px; font-size: 0.85rem; box-sizing: border-box; }
+    input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; box-sizing: border-box; margin-top: 8px; }
+    .payment-radios { display: flex; justify-content: space-between; margin: 10px 0; background: #f0f0f0; padding: 12px; border-radius: 10px; }
+    .payment-radios label { font-size: 0.85rem; font-weight: bold; display: flex; align-items: center; gap: 5px; }
 
-    .payment-radios { display: flex; justify-content: space-between; margin: 5px 0; background: #f8f9fa; padding: 8px; border-radius: 8px; }
-    .payment-radios label { font-size: 0.8rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+    .btn-confirm { background: var(--accent); color: white; border: none; padding: 1.2rem; width: 100%; border-radius: 10px; font-weight: bold; font-size: 1.1rem; margin-top: 10px; }
 
-    .msg-resaltado { font-size: 1.1rem; text-align: center; padding: 10px; border-radius: 8px; font-weight: bold; margin: 5px 0; border: 2px solid transparent; }
-    .msg-yappy { background: #e0f2fe; color: #0369a1; border-color: #0ea5e9; }
-    .msg-pendiente { background: #fff1f2; color: #be123c; border-color: #fb7185; }
-
-    .status-badge { text-align: center; font-weight: bold; font-size: 1rem; padding: 6px; border-radius: 4px; text-transform: uppercase; margin-top: 8px; }
-    .status-pendiente { background: #fee2e2; color: #dc2626; border: 1px solid #dc2626; }
-    .status-yappy { background: #e0f2fe; color: #0ea5e9; border: 1px solid #0ea5e9; }
-    .status-efectivo { background: #dcfce7; color: #16a34a; border: 1px solid #16a34a; }
-
-    .btn-confirm { background: var(--accent); color: white; border: none; padding: 0.9rem; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; margin-top: 5px; }
-
-    #toast { visibility: hidden; min-width: 200px; background: #333; color: #fff; text-align: center; border-radius: 5px; padding: 10px; position: fixed; z-index: 2000; left: 50%; bottom: 20px; transform: translateX(-50%); }
-    #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-    @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 20px; opacity: 1;} }
-    @keyframes fadeout { from {bottom: 20px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+    #toast { visibility: hidden; min-width: 250px; background: #333; color: #fff; text-align: center; border-radius: 8px; padding: 15px; position: fixed; z-index: 2000; left: 50%; bottom: 40px; transform: translateX(-50%); }
+    #toast.show { visibility: visible; }
   </style>
 </head>
 <body>
 
   <header>
-    <img src="imagenes/logombirria.png" class="logo">
+    <img src="imagenes/logombirria.png" class="logo" onerror="this.style.display='none'">
     <h1>Master Birria POS</h1>
-    <img src="imagenes/logombirria.png" class="logo">
+    <img src="imagenes/logombirria.png" class="logo" onerror="this.style.display='none'">
   </header>
 
   <div class="container">
-    <div class="menu-header">
-      <h2 style="font-size: 0.9rem; margin:0;">Dashboard</h2>
-      <button class="btn-invoice" onclick="generateInvoice()">Ver Pedido</button>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h2 style="font-size:1rem; margin:0;">Orden del Día</h2>
+        <button onclick="generateInvoice()" style="padding: 10px 15px; background: var(--secondary); color: white; border-radius: 5px; border: none; font-weight: bold;">Ver Pedido</button>
     </div>
     <div id="dashboard" class="products-grid"></div>
   </div>
@@ -99,30 +85,27 @@
     <div class="popup-content">
       <button class="close-x" onclick="document.getElementById('popup').style.display='none'">&times;</button>
       <div id="invoice" class="invoice-area"></div>
-      <div class="input-row">
-        <div class="input-group">
-          <label>N° Pedido</label>
-          <input type="number" id="orderNum" placeholder="001">
-        </div>
-        <div class="input-group">
-          <label>Cliente</label>
-          <input type="text" id="clientName" placeholder="Nombre">
-        </div>
-      </div>
-      <p style="font-size: 0.75rem; font-weight: bold; margin: 8px 0 2px 0;">FORMA DE PAGO:</p>
+      <input type="number" id="orderNum" placeholder="N° de Orden" inputmode="numeric">
+      <input type="text" id="clientName" placeholder="Nombre Cliente">
       <div class="payment-radios">
         <label><input type="radio" name="payment" value="yappy" onclick="updatePaymentUI()"> Yappy</label>
         <label><input type="radio" name="payment" value="efectivo" onclick="updatePaymentUI()"> Efectivo</label>
-        <label><input type="radio" name="payment" value="pendiente" onclick="updatePaymentUI()"> Pendiente</label>
+        <label><input type="radio" name="payment" value="pendiente" onclick="updatePaymentUI()"> Pend.</label>
       </div>
-      <div id="paymentArea" style="min-height: 50px;"></div>
-      <button class="btn-confirm" onclick="confirmAndShare()">Finalizar y Compartir</button>
+      <div id="paymentArea"></div>
+      <button class="btn-confirm" id="btnShare" onclick="confirmAndShare()">Finalizar Orden</button>
     </div>
   </div>
 
   <div id="toast"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script>
+    if (typeof html2canvas === 'undefined') {
+      document.write('<script src="html2canvas.min.js"><\/script>');
+    }
+  </script>
+
   <script>
     const products = [
       { id: 1, name: "HAMBURGUESA SENCILLA", price: 4, img: "imagenes/hsimple.png", qty: 0 },
@@ -134,162 +117,145 @@
       { id: 7, name: "15 ALITAS GRANDES", price: 16.5, img: "imagenes/alitas.png", qty: 0 },
       { id: 8, name: "20 ALITAS GRANDES", price: 20, img: "imagenes/alitas.png", qty: 0 },
       { id: 9, name: "PICADITA PEQUEÑA", price: 3.5, img: "imagenes/ppequeña.png", qty: 0 },
-      { 
-        id: 10, name: "PICADITA GRANDE", type: "group", img: "imagenes/pgrande.png",
-        options: [
-          { id: 101, name: "CHORIZO-CARNE", price: 5, qty: 0 },
-          { id: 102, name: "CHORIZO-ALITAS", price: 5, qty: 0 },
-          { id: 103, name: "ALITAS-CARNE", price: 5, qty: 0 }
-        ]
-      },
+      { id: 10, name: "PICADITA GRANDE", type: "group", img: "imagenes/pgrande.png", options: [{ id: 101, name: "CHORIZO-CARNE", price: 5, qty: 0 }, { id: 102, name: "CHORIZO-ALITAS", price: 5, qty: 0 }, { id: 103, name: "ALITAS-CARNE", price: 5, qty: 0 }] },
       { id: 11, name: "PICADITA FAMILIAR", price: 15, img: "imagenes/pfamiliar.png", qty: 0 },
       { id: 12, name: "SALCHIPAPA", price: 4.5, img: "imagenes/salchipapa.png", qty: 0 },
-      {
-        id: 13, name: "ADICIONALES", type: "group", img: "",
-        options: [
-          { id: 131, name: "Papas", price: 1.5, qty: 0 },
-          { id: 132, name: "Chorizo", price: 2.5, qty: 0 },
-          { id: 133, name: "Salsa", price: 0.5, qty: 0 }
-        ]
-      }
+      { id: 13, name: "ADICIONALES", type: "group", img: "", options: [{ id: 131, name: "Papas", price: 1.5, qty: 0 }, { id: 132, name: "Chorizo", price: 2.5, qty: 0 }, { id: 133, name: "Salsa", price: 0.5, qty: 0 }] }
     ];
 
+    function showToast(msg) {
+      const t = document.getElementById("toast"); t.innerText = msg; t.className = "show";
+      setTimeout(() => t.className = "", 3000);
+    }
+
     function renderDashboard() {
-      const db = document.getElementById("dashboard");
-      db.innerHTML = "";
+      const db = document.getElementById("dashboard"); db.innerHTML = "";
       products.forEach(p => {
-        const card = document.createElement("div");
-        card.className = "card";
-        let html = `<img src="${p.img}"><div class="card-title">${p.name}</div>`;
-        
+        const card = document.createElement("div"); card.className = "card";
+        let html = `<img src="${p.img}" onerror="this.src='https://via.placeholder.com/150?text=Comida'"><div class="card-title">${p.name}</div>`;
         if (p.type === "group") {
-          // Si es Picadita Grande, mostramos el precio principal arriba ($5.00)
-          if(p.name === "PICADITA GRANDE") {
-             html += `<div class="card-price">$${p.options[0].price.toFixed(2)}</div>`;
-          } else {
-             html += `<div class="card-price"></div>`; // Para Adicionales queda vacío
-          }
-          
-          html += `<div class="card-options">`;
+          html += `<div class="card-price">${p.name === "PICADITA GRANDE" ? "$5.00" : ""}</div><div class="card-options">`;
           p.options.forEach(o => {
-            html += `<div class="option-row" style="display:flex; flex-direction:column; gap:2px;">
-              <div style="display:flex; justify-content:space-between; font-weight:bold;">
-                <span>${o.name}</span>
-                ${p.name === "ADICIONALES" ? `<span style="color:var(--primary)">$${o.price.toFixed(2)}</span>` : ''}
-              </div>
-              <div class="controls">
-                <button onclick="updateQty(${o.id},-1)">-</button>
-                <span id="qty-${o.id}">${o.qty}</span>
-                <button onclick="updateQty(${o.id},1)">+</button>
-              </div>
-            </div>`;
+            html += `<div class="option-row"><div style="display:flex; justify-content:space-between"><span>${o.name}</span>${p.name === "ADICIONALES" ? "<span>$"+o.price.toFixed(2)+"</span>" : ""}</div>
+              <div class="controls"><button onclick="updateQty(${o.id},-1)">-</button><span id="qty-${o.id}">${o.qty}</span><button onclick="updateQty(${o.id},1)">+</button></div></div>`;
           });
           html += `</div>`;
         } else {
-          html += `<div class="card-price">$${p.price.toFixed(2)}</div>
-            <div class="controls" style="margin-top:auto;"><button onclick="updateQty(${p.id},-1)">-</button><span id="qty-${p.id}">${p.qty}</span><button onclick="updateQty(${p.id},1)">+</button></div>`;
+          html += `<div class="card-price">$${p.price.toFixed(2)}</div><div class="controls" style="margin-top:auto;"><button onclick="updateQty(${p.id},-1)">-</button><span id="qty-${p.id}">${p.qty}</span><button onclick="updateQty(${p.id},1)">+</button></div>`;
         }
-        card.innerHTML = html;
-        db.appendChild(card);
+        card.innerHTML = html; db.appendChild(card);
       });
-    }
-
-    // Funciones de lógica de negocio (mantener igual que antes)
-    function showToast(msg) {
-      const t = document.getElementById("toast");
-      t.innerText = msg; t.className = "show";
-      setTimeout(() => t.className = "", 3000);
     }
 
     function updateQty(id, ch) {
       products.forEach(p => {
         if(p.id===id) p.qty = Math.max(0, p.qty+ch);
-        else if(p.options) {
-          let o = p.options.find(opt=>opt.id===id);
-          if(o) o.qty = Math.max(0, o.qty+ch);
-        }
+        else if(p.options){ let o=p.options.find(opt=>opt.id === id); if(o) o.qty=Math.max(0, o.qty+ch); }
       });
-      const el = document.getElementById(`qty-${id}`);
-      if(el) el.innerText = getQty(id);
+      const el = document.getElementById(`qty-${id}`); if(el) el.innerText = getQty(id);
     }
 
     function getQty(id) {
       let q = 0;
-      products.forEach(p => {
-        if(p.id===id) q=p.qty;
-        else if(p.options){ let o=p.options.find(opt=>opt.id===id); if(o) q=o.qty; }
-      });
+      products.forEach(p => { if(p.id===id) q=p.qty; else if(p.options){ let o=p.options.find(opt=>opt.id===id); if(o) q=o.qty; } });
       return q;
     }
 
     function updatePaymentUI() {
       const mode = document.querySelector('input[name="payment"]:checked').value;
       const area = document.getElementById("paymentArea");
-      if(mode === 'efectivo') {
-        area.innerHTML = `<input type="number" id="received" placeholder="¿Con cuánto paga?" oninput="calcChange()" style="margin-top:5px"><div id="changeTxt" style="font-size:0.85rem; font-weight:bold; margin-top:4px; text-align:center"></div>`;
-      } else if(mode === 'yappy') {
-        area.innerHTML = `<div class="msg-resaltado msg-yappy">TRANSFERIR A:<br>61988350</div>`;
-      } else {
-        area.innerHTML = `<div class="msg-resaltado msg-pendiente">PAGO POR COBRAR</div>`;
-      }
+      if(mode === 'efectivo') area.innerHTML = `<input type="number" id="received" placeholder="¿Cuánto paga?" oninput="calcChange()" inputmode="decimal"><div id="chg" style="text-align:center; font-weight:bold; color:green; margin-top:5px"></div>`;
+      else if(mode === 'yappy') area.innerHTML = `<div style="text-align:center; padding:10px; color:#0369a1; font-weight:bold; background:#e0f2fe; border-radius:8px; margin-top:5px">YAPPY: 61988350</div>`;
+      else area.innerHTML = `<div style="text-align:center; padding:10px; color:#be123c; font-weight:bold; background:#fff1f2; border-radius:8px; margin-top:5px">PAGO POR COBRAR</div>`;
     }
 
     function calcChange() {
       const r = parseFloat(document.getElementById("received").value);
       const diff = r - window.currentTotal;
-      const txt = document.getElementById("changeTxt");
-      if(isNaN(r)) return txt.innerText = "";
-      txt.innerText = diff >= 0 ? `Cambio: $${diff.toFixed(2)}` : "Monto insuficiente";
-      txt.style.color = diff >= 0 ? "green" : "red";
+      document.getElementById("chg").innerText = !isNaN(diff) && diff >= 0 ? "Cambio: $" + diff.toFixed(2) : "";
     }
 
     function generateInvoice() {
-      const inv = document.getElementById("invoice");
       const now = new Date();
+      const dateTimeStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      const y = now.getFullYear(); const m = String(now.getMonth() + 1).padStart(2, '0'); const d = String(now.getDate()).padStart(2, '0');
+      const hh = String(now.getHours()).padStart(2, '0'); const mm = String(now.getMinutes()).padStart(2, '0');
+      window.fileDateTimeStr = `${y}-${m}-${d}_${hh}-${mm}`;
+      
+      const inv = document.getElementById("invoice");
       let total = 0, has = false;
-      let html = `<div style="text-align:center"><strong>MASTER BIRRIA</strong><br><span id="orderTitle" style="font-size:0.9rem">ORDEN DE PEDIDO</span><br><span style="font-size:0.7rem">${now.toLocaleDateString()} ${now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span></div><hr style="margin:5px 0">`;
+      let html = `<div style="text-align:center; border-bottom:1px dashed #000; padding-bottom:5px; margin-bottom:5px;"><strong>MASTER BIRRIA</strong></div><div style="text-align:center; font-size:0.75rem; margin-bottom:10px;">${dateTimeStr}</div>`;
       
       products.forEach(p => {
-        if(p.options) {
-          p.options.forEach(o => { if(o.qty>0){ html+=`<div>${p.name} (${o.name}) x${o.qty} <span style="float:right">$${(o.price*o.qty).toFixed(2)}</span></div>`; total+=o.price*o.qty; has=true; }});
-        } else if(p.qty>0) {
-          html+=`<div>${p.name} x${p.qty} <span style="float:right">$${(p.price*p.qty).toFixed(2)}</span></div>`; total+=p.price*p.qty; has=true;
-        }
+        if(p.options) p.options.forEach(o => { if(o.qty > 0) { html += `<div style="display:flex; justify-content:space-between"><span>${o.name} x${o.qty}</span> <span>$${(o.price*o.qty).toFixed(2)}</span></div>`; total += o.price*o.qty; has = true; }});
+        else if(p.qty > 0) { html += `<div style="display:flex; justify-content:space-between"><span>${p.name} x${p.qty}</span> <span>$${(p.price*p.qty).toFixed(2)}</span></div>`; total += p.price*p.qty; has = true; }
       });
-      
       if(!has) return showToast("⚠️ Pedido vacío");
-      html += `<hr style="margin:5px 0"><div style="text-align:right"><strong>TOTAL: $${total.toFixed(2)}</strong></div>`;
-      inv.innerHTML = html;
-      window.currentTotal = total;
-      const rads = document.getElementsByName("payment");
-      for(let r of rads) r.checked = false;
-      document.getElementById("paymentArea").innerHTML = "";
+      html += `<hr style="border:none; border-top:1px dashed #000; margin:10px 0"><div style="text-align:right"><strong>TOTAL: $${total.toFixed(2)}</strong></div>`;
+      inv.innerHTML = html; window.currentTotal = total; window.lastDateTime = dateTimeStr;
       document.getElementById("popup").style.display = "flex";
     }
 
+    // --- FUNCIÓN CLAVE OPTIMIZADA ---
     async function confirmAndShare() {
       const name = document.getElementById("clientName").value.trim();
       const num = document.getElementById("orderNum").value.trim();
       const payEl = document.querySelector('input[name="payment"]:checked');
-      if(!num || !name || !payEl) return showToast("❌ Completa todos los datos");
-      const mode = payEl.value;
+      if(!num || !name || !payEl) return showToast("❌ Faltan datos");
+
+      // 1. INMEDIATO: Abrir WhatsApp con el texto
+      enviarWhatsApp(num, name.toUpperCase(), payEl.value);
+
+      // 2. SEGUNDO PLANO: Procesar imagen mientras el usuario está en WhatsApp
+      const btn = document.getElementById("btnShare");
+      btn.disabled = true; btn.innerText = "Enviando...";
+      
       const inv = document.getElementById("invoice");
-      document.getElementById("orderTitle").innerText = `ORDEN DE PEDIDO #${num}`;
-      inv.innerHTML += `<div style="margin-top:5px"><strong>CLIENTE:</strong> ${name.toUpperCase()}</div>`;
-      if(mode === 'yappy') inv.innerHTML += `<div class="status-badge status-yappy">PAGADO CON YAPPY</div>`;
-      else if(mode === 'pendiente') inv.innerHTML += `<div class="status-badge status-pendiente">PAGO PENDIENTE</div>`;
-      else {
-        const r = parseFloat(document.getElementById("received").value) || 0;
-        if(r < window.currentTotal) return showToast("❌ Monto insuficiente");
-        inv.innerHTML += `<div style="background:#f1f1f1; padding:5px; margin-top:5px; font-size:0.75rem">Recibido: $${r.toFixed(2)} | Cambio: $${(r-window.currentTotal).toFixed(2)}</div><div class="status-badge status-efectivo">PAGO EN EFECTIVO</div>`;
-      }
-      showToast("📸 Compartiendo...");
-      const canvas = await html2canvas(inv, { scale: 2 });
-      const blob = await new Promise(res => canvas.toBlob(res));
-      const file = new File([blob], `Orden_${num}.png`, {type:"image/png"});
-      if(navigator.share) await navigator.share({ files: [file] });
-      else { const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`Orden_${num}.png`; a.click(); }
-      location.reload();
+      const footer = document.createElement("div");
+      footer.style.marginTop = "10px"; footer.style.fontSize = "0.8rem"; footer.style.borderTop = "1px solid #eee";
+      footer.innerHTML = `Orden: #${num} | Cliente: ${name.toUpperCase()} | Pago: ${payEl.value.toUpperCase()}`;
+      inv.appendChild(footer);
+
+      // Pequeña pausa para no congelar la apertura de WhatsApp
+      setTimeout(async () => {
+        try {
+          if (typeof html2canvas !== 'undefined') {
+            const canvas = await html2canvas(inv, { scale: 1.5, backgroundColor: "#ffffff" });
+            canvas.toBlob((blob) => {
+              descargarImagen(blob, `Orden_${num}_${window.fileDateTimeStr}`);
+              btn.innerText = "✅ Guardado";
+            }, 'image/png');
+          }
+        } catch (e) { console.error(e); }
+        
+        footer.remove();
+        // Preguntar si desea limpiar pantalla después de volver de WhatsApp
+        setTimeout(() => { 
+           if(confirm("¿Pedido finalizado? Presiona ACEPTAR para limpiar.")) location.reload();
+           else { btn.disabled = false; btn.innerText = "Finalizar Orden"; }
+        }, 1500);
+      }, 500);
+    }
+
+    function enviarWhatsApp(num, cliente, payMode) {
+      let lista = "";
+      products.forEach(p => {
+        if(p.options) p.options.forEach(o => { if(o.qty > 0) lista += `• ${o.name}\n  ${o.qty} x $${o.price.toFixed(2)} = $${(o.price*o.qty).toFixed(2)}\n`; });
+        else if(p.qty > 0) lista += `• ${p.name}\n  ${p.qty} x $${p.price.toFixed(2)} = $${(p.price*p.qty).toFixed(2)}\n`;
+      });
+      const recEl = document.getElementById("received");
+      const rec = recEl ? parseFloat(recEl.value) || 0 : 0;
+      const cam = rec > 0 ? `\n*Recibido:* $${rec.toFixed(2)}\n*Cambio:* $${(rec - window.currentTotal).toFixed(2)}` : "";
+
+      const msg = encodeURIComponent(`*MASTER BIRRIA*\nFecha: ${window.lastDateTime}\n----------------------------\n*Orden:* #${num}\n*Cliente:* ${cliente}\n----------------------------\n*DETALLE:*\n${lista}----------------------------\n*TOTAL: $${window.currentTotal.toFixed(2)}*\n*Pago:* ${payMode.toUpperCase()}${cam}\n\n¡Gracias por su compra!`);
+      window.open(`https://wa.me/?text=${msg}`, '_blank');
+    }
+
+    function descargarImagen(blob, nombre) {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = nombre + ".png";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
     }
 
     renderDashboard();
