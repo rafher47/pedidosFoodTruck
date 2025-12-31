@@ -5,61 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Master Birria POS</title>
   <style>
-    :root {
-      --primary: #e63946;
-      --secondary: #457b9d;
-      --bg: #f8f9fa;
-      --card-bg: #ffffff;
-      --accent: #2a9d8f;
-    }
-
-    html, body { 
-      margin: 0; padding: 0; height: 100%; width: 100%;
-      overflow: hidden; overscroll-behavior-y: contain; 
-      user-select: none; -webkit-user-select: none;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: var(--bg);
-    }
+    :root { --primary: #e63946; --secondary: #457b9d; --bg: #f8f9fa; --card-bg: #ffffff; --accent: #2a9d8f; }
+    html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; overscroll-behavior-y: contain; user-select: none; -webkit-user-select: none; font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); }
     
-    header { 
-      background: var(--primary); color: white; padding: 0 1rem; 
-      display: flex; align-items: center; justify-content: space-between;
-      height: 60px;
-    }
-    .logo { width: 35px; height: auto; }
-    h1 { font-size: 1.1rem; margin: 0; }
+    header { background: var(--primary); color: white; padding: 0 1rem; display: flex; align-items: center; justify-content: center; height: 70px; position: relative; }
+    .logo { height: 50px; width: auto; }
+    h1 { font-size: 1.1rem; margin-left: 10px; }
 
     .container { padding: 10px; height: calc(100% - 80px); display: flex; flex-direction: column; }
-    .products-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
-      gap: 12px; overflow-y: auto; padding-bottom: 60px; -webkit-overflow-scrolling: touch;
-    }
+    
+    .action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 10px; }
+    .btn-action { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; color: white; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .btn-ver-pedido { background: var(--secondary); }
+    .btn-ver-ventas { background: #333; }
 
-    .card { 
-      background: var(--card-bg); border-radius: 12px; padding: 10px; 
-      border: 1px solid #eee; height: 320px; display: flex; flex-direction: column;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
-    }
-    .card img { width: 100%; height: 85px; object-fit: cover; border-radius: 8px; }
+    .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 12px; overflow-y: auto; padding-bottom: 60px; -webkit-overflow-scrolling: touch; }
+    
+    .card { background: var(--card-bg); border-radius: 12px; padding: 10px; border: 1px solid #eee; height: 320px; display: flex; flex-direction: column; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: relative; overflow: hidden; }
+    .card img { width: 100%; height: 85px; object-fit: cover; border-radius: 8px; background: #eee; }
     .card-title { font-size: 0.75rem; font-weight: bold; height: 35px; text-align: center; margin: 5px 0; display: flex; align-items: center; justify-content: center; }
     .card-price { color: var(--primary); font-weight: bold; text-align: center; font-size: 1rem; margin-bottom: 5px; min-height: 1.2rem; }
-    
     .card-options { flex: 1; overflow-y: auto; font-size: 0.7rem; background: #f3f3f3; border-radius: 6px; padding: 5px; }
     .option-row { border-bottom: 1px solid #ddd; padding: 6px 0; }
     .controls { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 5px; }
     .controls button { background: var(--secondary); color: white; border: none; width: 32px; height: 32px; border-radius: 6px; font-weight: bold; font-size: 1.2rem; }
 
     .popup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 1000; }
-    .popup-content { background: white; padding: 1.5rem; border-radius: 20px; width: 90%; max-width: 380px; position: relative; }
+    .popup-content { background: white; padding: 1.5rem; border-radius: 20px; width: 90%; max-width: 380px; position: relative; max-height: 85vh; overflow-y: auto; }
+    .invoice-area { border: 1px solid #ccc; padding: 15px; background: white; font-size: 0.9rem; color: #000; border-radius: 5px; margin-bottom: 10px; }
+    .close-x { position: absolute; top: 10px; right: 15px; font-size: 2.5rem; border: none; background: none; color: #999; cursor: pointer; }
     
-    .invoice-area { border: 1px solid #ccc; padding: 15px; background: white; font-size: 0.9rem; color: #000; border-radius: 5px; }
-    .close-x { position: absolute; top: 10px; right: 15px; font-size: 2.5rem; border: none; background: none; color: #999; }
+    .input-group { margin-bottom: 10px; }
+    .input-label { font-size: 0.75rem; color: #666; font-weight: bold; margin-left: 5px; }
+    input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; box-sizing: border-box; margin-top: 4px; }
     
-    input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; box-sizing: border-box; margin-top: 8px; }
     .payment-radios { display: flex; justify-content: space-between; margin: 10px 0; background: #f0f0f0; padding: 12px; border-radius: 10px; }
-    .payment-radios label { font-size: 0.85rem; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+    #paymentDetailArea { margin-top: 10px; border-radius: 10px; padding: 15px; font-weight: bold; text-align: center; font-size: 1rem; }
+    .pay-yappy { background: #e0f2fe; color: #0369a1; border: 2px solid #0369a1; }
+    .pay-efectivo { background: #dcfce7; color: #166534; border: 2px solid #166534; }
+    .pay-pendiente { background: #fee2e2; color: #991b1b; border: 2px solid #991b1b; }
 
     .btn-confirm { background: var(--accent); color: white; border: none; padding: 1.2rem; width: 100%; border-radius: 10px; font-weight: bold; font-size: 1.1rem; margin-top: 10px; }
+    
+    .venta-item { border-bottom: 1px solid #ddd; padding: 8px 0; display: flex; justify-content: space-between; align-items: center; }
+    .btn-pagar { background: #f59e0b; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
+
+    .pago-selector-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+    .btn-metodo { padding: 15px; border: none; border-radius: 10px; font-weight: bold; color: white; }
+    .yappy-btn { background: #0077ff; }
+    .efectivo-btn { background: #10b981; }
 
     #toast { visibility: hidden; min-width: 250px; background: #333; color: #fff; text-align: center; border-radius: 8px; padding: 15px; position: fixed; z-index: 2000; left: 50%; bottom: 40px; transform: translateX(-50%); }
     #toast.show { visibility: visible; }
@@ -68,45 +62,73 @@
 <body>
 
   <header>
-    <img src="imagenes/logombirria.png" class="logo" onerror="this.style.display='none'">
-    <h1>Master Birria POS</h1>
-    <img src="imagenes/logombirria.png" class="logo" onerror="this.style.display='none'">
+    <img src="imagenes/logombirria.png" class="logo" alt="Master Birria">
+    <h1>Master Birria</h1>
   </header>
 
   <div class="container">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <h2 style="font-size:1rem; margin:0;">Orden del Día</h2>
-        <button onclick="generateInvoice()" style="padding: 10px 15px; background: var(--secondary); color: white; border-radius: 5px; border: none; font-weight: bold;">Ver Pedido</button>
+    <div class="action-bar">
+        <button class="btn-action btn-ver-ventas" onclick="abrirHistorial()">📦 VER VENTAS</button>
+        <button class="btn-action btn-ver-pedido" onclick="generateInvoice()">🛒 VER PEDIDO</button>
     </div>
     <div id="dashboard" class="products-grid"></div>
   </div>
 
-  <div class="popup" id="popup">
+  <div class="popup" id="popupPedido">
     <div class="popup-content">
-      <button class="close-x" onclick="document.getElementById('popup').style.display='none'">&times;</button>
+      <button class="close-x" onclick="cancelarPedidoEncerar()">&times;</button>
       <div id="invoice" class="invoice-area"></div>
-      <input type="number" id="orderNum" placeholder="N° de Orden" inputmode="numeric">
-      <input type="text" id="clientName" placeholder="Nombre Cliente">
-      <div class="payment-radios">
-        <label><input type="radio" name="payment" value="yappy" onclick="updatePaymentUI()"> Yappy</label>
-        <label><input type="radio" name="payment" value="efectivo" onclick="updatePaymentUI()"> Efectivo</label>
-        <label><input type="radio" name="payment" value="pendiente" onclick="updatePaymentUI()"> Pend.</label>
+      
+      <div class="input-group">
+        <span class="input-label">NÚMERO DE ORDEN</span>
+        <input type="number" id="orderNum" placeholder="N° de Orden" inputmode="numeric">
       </div>
-      <div id="paymentArea"></div>
-      <button class="btn-confirm" id="btnShare" onclick="confirmAndShare()">Finalizar Orden</button>
+      
+      <div class="input-group">
+        <span class="input-label">NOMBRE DEL CLIENTE</span>
+        <input type="text" id="clientName" placeholder="Ej: Juan Pérez">
+      </div>
+
+      <div class="payment-radios">
+        <label><input type="radio" name="payment" value="yappy" onchange="updatePaymentStyle()"> Yappy</label>
+        <label><input type="radio" name="payment" value="efectivo" onchange="updatePaymentStyle()"> Efectivo</label>
+        <label><input type="radio" name="payment" value="pendiente" onchange="updatePaymentStyle()"> Pend.</label>
+      </div>
+      <div id="paymentDetailArea" style="display:none;"></div>
+      <button class="btn-confirm" onclick="finalizarOrden()">FINALIZAR Y ENVIAR</button>
+    </div>
+  </div>
+
+  <div class="popup" id="popupHistorial">
+    <div class="popup-content">
+      <button class="close-x" onclick="document.getElementById('popupHistorial').style.display='none'">&times;</button>
+      <h3 id="fechaTituloHistorial" style="text-align:center; margin-top:0; font-size:1rem;">Ventas Guardadas</h3>
+      <div id="listaVentas" style="font-size: 0.8rem; max-height: 250px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background: #fafafa; border-radius: 8px;"></div>
+      <div id="resumenCaja" style="margin-top:15px; font-weight:bold; background:#e0f2fe; padding:15px; border-radius:10px; color: #0369a1;"></div>
+      <button class="btn-confirm" style="background:var(--secondary);" onclick="copiarReporteCompleto()">📋 COPIAR REPORTE</button>
+      <button class="btn-confirm" style="background:#e63946;" onclick="cerrarCaja()">BORRAR TODO EL DÍA</button>
+    </div>
+  </div>
+
+  <div class="popup" id="popupSeleccionarMetodo">
+    <div class="popup-content" style="max-width:300px; text-align:center;">
+      <h3 style="margin-top:0;">¿Cómo pagó?</h3>
+      <p id="infoOrdenPago" style="font-size:0.9rem; color:#666;"></p>
+      <div class="pago-selector-btns">
+        <button class="btn-metodo yappy-btn" onclick="procesarPagoEstado('yappy')">YAPPY</button>
+        <button class="btn-metodo efectivo-btn" onclick="procesarPagoEstado('efectivo')">EFECTIVO</button>
+      </div>
+      <button onclick="document.getElementById('popupSeleccionarMetodo').style.display='none'" style="margin-top:15px; background:none; border:none; color:gray; text-decoration:underline;">Regresar</button>
     </div>
   </div>
 
   <div id="toast"></div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
-    if (typeof html2canvas === 'undefined') {
-      document.write('<script src="html2canvas.min.js"><\/script>');
-    }
-  </script>
+    let historialVentas = JSON.parse(localStorage.getItem('ventas_birria')) || [];
+    let idVentaPendienteActual = null;
+    let currentTotal = 0;
 
-  <script>
     const products = [
       { id: 1, name: "HAMBURGUESA SENCILLA", price: 4, img: "imagenes/hsimple.png", qty: 0 },
       { id: 2, name: "HAMBURGUESA COMPLETA", price: 6, img: "imagenes/hcompleta.png", qty: 0 },
@@ -120,19 +142,16 @@
       { id: 10, name: "PICADITA GRANDE", type: "group", img: "imagenes/pgrande.png", options: [{ id: 101, name: "CHORIZO-CARNE", price: 5, qty: 0 }, { id: 102, name: "CHORIZO-ALITAS", price: 5, qty: 0 }, { id: 103, name: "ALITAS-CARNE", price: 5, qty: 0 }] },
       { id: 11, name: "PICADITA FAMILIAR", price: 15, img: "imagenes/pfamiliar.png", qty: 0 },
       { id: 12, name: "SALCHIPAPA", price: 4.5, img: "imagenes/salchipapa.png", qty: 0 },
-      { id: 13, name: "ADICIONALES", type: "group", img: "", options: [{ id: 131, name: "Papas", price: 1.5, qty: 0 }, { id: 132, name: "Chorizo", price: 2.5, qty: 0 }, { id: 133, name: "Salsa", price: 0.5, qty: 0 }] }
+      { id: 13, name: "ADICIONALES", type: "group", img: "imagenes/extras.png", options: [{ id: 131, name: "Papas", price: 1.5, qty: 0 }, { id: 132, name: "Chorizo", price: 2.5, qty: 0 }, { id: 133, name: "Salsa", price: 0.5, qty: 0 }] }
     ];
 
-    function showToast(msg) {
-      const t = document.getElementById("toast"); t.innerText = msg; t.className = "show";
-      setTimeout(() => t.className = "", 3000);
-    }
+    function showToast(msg) { const t = document.getElementById("toast"); t.innerText = msg; t.className = "show"; setTimeout(() => t.className = "", 3000); }
 
     function renderDashboard() {
       const db = document.getElementById("dashboard"); db.innerHTML = "";
       products.forEach(p => {
         const card = document.createElement("div"); card.className = "card";
-        let html = `<img src="${p.img}" onerror="this.src='https://via.placeholder.com/150?text=Comida'"><div class="card-title">${p.name}</div>`;
+        let html = `<img src="${p.img}" onerror="this.style.display='none';"><div class="card-title">${p.name}</div>`;
         if (p.type === "group") {
           html += `<div class="card-price">${p.name === "PICADITA GRANDE" ? "$5.00" : ""}</div><div class="card-options">`;
           p.options.forEach(o => {
@@ -161,101 +180,146 @@
       return q;
     }
 
-    function updatePaymentUI() {
-      const mode = document.querySelector('input[name="payment"]:checked').value;
-      const area = document.getElementById("paymentArea");
-      if(mode === 'efectivo') area.innerHTML = `<input type="number" id="received" placeholder="¿Cuánto paga?" oninput="calcChange()" inputmode="decimal"><div id="chg" style="text-align:center; font-weight:bold; color:green; margin-top:5px"></div>`;
-      else if(mode === 'yappy') area.innerHTML = `<div style="text-align:center; padding:10px; color:#0369a1; font-weight:bold; background:#e0f2fe; border-radius:8px; margin-top:5px">YAPPY: 61988350</div>`;
-      else area.innerHTML = `<div style="text-align:center; padding:10px; color:#be123c; font-weight:bold; background:#fff1f2; border-radius:8px; margin-top:5px">PAGO POR COBRAR</div>`;
+    function updatePaymentStyle() {
+      const area = document.getElementById("paymentDetailArea");
+      const payEl = document.querySelector('input[name="payment"]:checked');
+      if(!payEl) return;
+      area.style.display = "block"; area.className = "";
+      if (payEl.value === 'yappy') { area.classList.add("pay-yappy"); area.innerHTML = "📱 YAPPY: 61988350"; }
+      else if (payEl.value === 'efectivo') { area.classList.add("pay-efectivo"); area.innerHTML = `💵 EFECTIVO<br><input type="number" id="received" placeholder="¿Cuánto recibes?" oninput="calcChange()" style="width:80%; margin:5px auto; display:block;"><span id="chg"></span>`; }
+      else { area.classList.add("pay-pendiente"); area.innerHTML = "🚨 PAGO PENDIENTE"; }
     }
 
     function calcChange() {
-      const r = parseFloat(document.getElementById("received").value);
-      const diff = r - window.currentTotal;
-      document.getElementById("chg").innerText = !isNaN(diff) && diff >= 0 ? "Cambio: $" + diff.toFixed(2) : "";
+      const rec = parseFloat(document.getElementById("received").value) || 0;
+      const diff = rec - currentTotal;
+      document.getElementById("chg").innerText = diff >= 0 ? "CAMBIO: $" + diff.toFixed(2) : "";
+    }
+
+    function getNextOrderNumber() {
+        if (historialVentas.length === 0) return 1;
+        const numeros = historialVentas.map(v => parseInt(v.num)).filter(n => !isNaN(n));
+        return numeros.length > 0 ? Math.max(...numeros) + 1 : 1;
     }
 
     function generateInvoice() {
-      const now = new Date();
-      const dateTimeStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-      const y = now.getFullYear(); const m = String(now.getMonth() + 1).padStart(2, '0'); const d = String(now.getDate()).padStart(2, '0');
-      const hh = String(now.getHours()).padStart(2, '0'); const mm = String(now.getMinutes()).padStart(2, '0');
-      window.fileDateTimeStr = `${y}-${m}-${d}_${hh}-${mm}`;
-      
       const inv = document.getElementById("invoice");
       let total = 0, has = false;
-      let html = `<div style="text-align:center; border-bottom:1px dashed #000; padding-bottom:5px; margin-bottom:5px;"><strong>MASTER BIRRIA</strong></div><div style="text-align:center; font-size:0.75rem; margin-bottom:10px;">${dateTimeStr}</div>`;
-      
+      const now = new Date();
+      const fechaActual = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+      let html = `<div style="text-align:center"><strong>MASTER BIRRIA</strong><br><small>${fechaActual}</small></div><hr>`;
       products.forEach(p => {
         if(p.options) p.options.forEach(o => { if(o.qty > 0) { html += `<div style="display:flex; justify-content:space-between"><span>${o.name} x${o.qty}</span> <span>$${(o.price*o.qty).toFixed(2)}</span></div>`; total += o.price*o.qty; has = true; }});
         else if(p.qty > 0) { html += `<div style="display:flex; justify-content:space-between"><span>${p.name} x${p.qty}</span> <span>$${(p.price*p.qty).toFixed(2)}</span></div>`; total += p.price*p.qty; has = true; }
       });
-      if(!has) return showToast("⚠️ Pedido vacío");
-      html += `<hr style="border:none; border-top:1px dashed #000; margin:10px 0"><div style="text-align:right"><strong>TOTAL: $${total.toFixed(2)}</strong></div>`;
-      inv.innerHTML = html; window.currentTotal = total; window.lastDateTime = dateTimeStr;
-      document.getElementById("popup").style.display = "flex";
+      if(!has) return showToast("⚠️ Selecciona productos primero");
+      html += `<hr><div style="text-align:right"><strong>TOTAL: $${total.toFixed(2)}</strong></div>`;
+      inv.innerHTML = html; currentTotal = total;
+      document.getElementById("orderNum").value = getNextOrderNumber();
+      document.getElementById("popupPedido").style.display = "flex";
     }
 
-    // --- FUNCIÓN CLAVE OPTIMIZADA ---
-    async function confirmAndShare() {
+    function finalizarOrden() {
       const name = document.getElementById("clientName").value.trim();
       const num = document.getElementById("orderNum").value.trim();
       const payEl = document.querySelector('input[name="payment"]:checked');
-      if(!num || !name || !payEl) return showToast("❌ Faltan datos");
-
-      // 1. INMEDIATO: Abrir WhatsApp con el texto
-      enviarWhatsApp(num, name.toUpperCase(), payEl.value);
-
-      // 2. SEGUNDO PLANO: Procesar imagen mientras el usuario está en WhatsApp
-      const btn = document.getElementById("btnShare");
-      btn.disabled = true; btn.innerText = "Enviando...";
       
-      const inv = document.getElementById("invoice");
-      const footer = document.createElement("div");
-      footer.style.marginTop = "10px"; footer.style.fontSize = "0.8rem"; footer.style.borderTop = "1px solid #eee";
-      footer.innerHTML = `Orden: #${num} | Cliente: ${name.toUpperCase()} | Pago: ${payEl.value.toUpperCase()}`;
-      inv.appendChild(footer);
+      if(!num || !name) return showToast("❌ Faltan datos del cliente");
+      if(!payEl) return showToast("⚠️ Selecciona un método de pago");
 
-      // Pequeña pausa para no congelar la apertura de WhatsApp
-      setTimeout(async () => {
-        try {
-          if (typeof html2canvas !== 'undefined') {
-            const canvas = await html2canvas(inv, { scale: 1.5, backgroundColor: "#ffffff" });
-            canvas.toBlob((blob) => {
-              descargarImagen(blob, `Orden_${num}_${window.fileDateTimeStr}`);
-              btn.innerText = "✅ Guardado";
-            }, 'image/png');
-          }
-        } catch (e) { console.error(e); }
-        
-        footer.remove();
-        // Preguntar si desea limpiar pantalla después de volver de WhatsApp
-        setTimeout(() => { 
-           if(confirm("¿Pedido finalizado? Presiona ACEPTAR para limpiar.")) location.reload();
-           else { btn.disabled = false; btn.innerText = "Finalizar Orden"; }
-        }, 1500);
-      }, 500);
-    }
-
-    function enviarWhatsApp(num, cliente, payMode) {
-      let lista = "";
-      products.forEach(p => {
-        if(p.options) p.options.forEach(o => { if(o.qty > 0) lista += `• ${o.name}\n  ${o.qty} x $${o.price.toFixed(2)} = $${(o.price*o.qty).toFixed(2)}\n`; });
-        else if(p.qty > 0) lista += `• ${p.name}\n  ${p.qty} x $${p.price.toFixed(2)} = $${(p.price*p.qty).toFixed(2)}\n`;
-      });
+      const metodo = payEl.value;
       const recEl = document.getElementById("received");
-      const rec = recEl ? parseFloat(recEl.value) || 0 : 0;
-      const cam = rec > 0 ? `\n*Recibido:* $${rec.toFixed(2)}\n*Cambio:* $${(rec - window.currentTotal).toFixed(2)}` : "";
+      const recValue = recEl ? parseFloat(recEl.value) : 0;
 
-      const msg = encodeURIComponent(`*MASTER BIRRIA*\nFecha: ${window.lastDateTime}\n----------------------------\n*Orden:* #${num}\n*Cliente:* ${cliente}\n----------------------------\n*DETALLE:*\n${lista}----------------------------\n*TOTAL: $${window.currentTotal.toFixed(2)}*\n*Pago:* ${payMode.toUpperCase()}${cam}\n\n¡Gracias por su compra!`);
-      window.open(`https://wa.me/?text=${msg}`, '_blank');
+      if(metodo === 'efectivo') {
+          if(!recEl || !recEl.value || recValue <= 0) return showToast("💵 Indica cuánto recibes");
+          if(recValue < currentTotal) return showToast(`❌ Falta dinero ($${(currentTotal - recValue).toFixed(2)})`);
+      }
+
+      const now = new Date();
+      const fechaStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      let detalle = "";
+      products.forEach(p => {
+        if(p.options) p.options.forEach(o => { if(o.qty > 0) detalle += `*•* ${o.name}\n  ${o.qty} x $${o.price.toFixed(2)} = $${(o.price*o.qty).toFixed(2)}\n`; });
+        else if(p.qty > 0) detalle += `*•* ${p.name}\n  ${p.qty} x $${p.price.toFixed(2)} = $${(p.price*p.qty).toFixed(2)}\n`;
+      });
+
+      const cambioStr = (metodo === 'efectivo') ? `\nRecibido: $${recValue.toFixed(2)}\nCambio: $${(recValue - currentTotal).toFixed(2)}` : "";
+      const texto = `MASTER BIRRIA\nFecha: ${fechaStr}\n----------------------------\nOrden: #${num}\nCliente: ${name.toUpperCase()}\n----------------------------\nDETALLE:\n${detalle}----------------------------\n*TOTAL:* $${currentTotal.toFixed(2)}\nPago: ${metodo.toUpperCase()}${cambioStr}\n\n¡Gracias por su compra!`;
+      
+      historialVentas.push({ id: Date.now(), num: parseInt(num), name, total: currentTotal, metodo: metodo, fecha: fechaStr });
+      localStorage.setItem('ventas_birria', JSON.stringify(historialVentas));
+
+      const temp = document.createElement("textarea"); temp.value = texto; document.body.appendChild(temp); temp.select(); document.execCommand("copy"); document.body.removeChild(temp);
+      window.location.href = `whatsapp://send?text=${encodeURIComponent(texto)}`;
+
+      encerarTodo();
+      document.getElementById("popupPedido").style.display = "none";
+      showToast("✅ Enviado");
     }
 
-    function descargarImagen(blob, nombre) {
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = nombre + ".png";
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    function encerarTodo() {
+      products.forEach(p => { if(p.options) p.options.forEach(o => o.qty = 0); else p.qty = 0; });
+      document.getElementById("clientName").value = "";
+      document.getElementById("orderNum").value = "";
+      document.getElementById("paymentDetailArea").style.display = "none";
+      const radioP = document.querySelector('input[name="payment"]:checked');
+      if(radioP) radioP.checked = false;
+      renderDashboard();
+    }
+
+    function cancelarPedidoEncerar() { encerarTodo(); document.getElementById("popupPedido").style.display = "none"; }
+
+    function abrirHistorial() {
+      const lista = document.getElementById("listaVentas");
+      const res = document.getElementById("resumenCaja");
+      const hoy = new Date().toLocaleDateString();
+      document.getElementById("fechaTituloHistorial").innerText = `Ventas del ${hoy}`;
+      lista.innerHTML = historialVentas.length ? "" : "Sin ventas.";
+      let t = 0, y = 0, e = 0, p = 0;
+      historialVentas.forEach((v) => {
+        const item = document.createElement("div");
+        item.className = "venta-item";
+        let btnPagar = v.metodo === 'pendiente' ? `<button class="btn-pagar" onclick="mostrarMenuPago(${v.id}, '${v.name}', ${v.total})">Pagar</button>` : "";
+        item.innerHTML = `<div><strong>#${v.num}</strong> - ${v.name}<br><span style="color:${v.metodo==='pendiente'?'red':'gray'}">$${v.total.toFixed(2)} (${v.metodo.toUpperCase()})</span></div>${btnPagar}`;
+        lista.appendChild(item);
+        t += v.total; if(v.metodo === 'yappy') y += v.total; else if(v.metodo === 'efectivo') e += v.total; else p += v.total;
+      });
+      res.innerHTML = `Efectivo: $${e.toFixed(2)} | Yappy: $${y.toFixed(2)}<br>Pendiente: $${p.toFixed(2)} | TOTAL: $${t.toFixed(2)}`;
+      document.getElementById("popupHistorial").style.display = "flex";
+    }
+
+    function mostrarMenuPago(id, cliente, total) {
+        idVentaPendienteActual = id;
+        document.getElementById("infoOrdenPago").innerText = `${cliente} - $${total.toFixed(2)}`;
+        document.getElementById("popupSeleccionarMetodo").style.display = "flex";
+    }
+
+    function procesarPagoEstado(metodo) {
+        historialVentas = historialVentas.map(v => { if(v.id === idVentaPendienteActual) v.metodo = metodo; return v; });
+        localStorage.setItem('ventas_birria', JSON.stringify(historialVentas));
+        document.getElementById("popupSeleccionarMetodo").style.display = "none";
+        abrirHistorial();
+        showToast("✅ Pago actualizado");
+    }
+
+    function copiarReporteCompleto() {
+      if(!historialVentas.length) return;
+      let r = `📋 REPORTE MASTER BIRRIA\n------------------\n`;
+      let t = 0;
+      historialVentas.forEach(v => { r += `#${v.num} | ${v.name} | $${v.total.toFixed(2)} (${v.metodo.toUpperCase()})\n`; t += v.total; });
+      r += `------------------\nTOTAL DÍA: $${t.toFixed(2)}`;
+      const temp = document.createElement("textarea"); temp.value = r; document.body.appendChild(temp); temp.select(); document.execCommand("copy"); document.body.removeChild(temp);
+      showToast("📋 Reporte copiado");
+    }
+
+    function cerrarCaja() {
+      if(confirm("¿Borrar todas las ventas y reiniciar contador?")) { 
+        historialVentas = []; localStorage.removeItem('ventas_birria'); 
+        document.getElementById("popupHistorial").style.display = "none"; 
+        showToast("🧹 Caja limpia"); 
+      }
     }
 
     renderDashboard();
