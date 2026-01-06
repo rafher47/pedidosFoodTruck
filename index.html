@@ -8,17 +8,48 @@
     :root { --primary: #e63946; --secondary: #457b9d; --bg: #f8f9fa; --card-bg: #ffffff; --accent: #2a9d8f; }
     html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; overscroll-behavior-y: contain; user-select: none; -webkit-user-select: none; font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); }
     
-    header { background: var(--primary); color: white; padding: 0 1rem; display: flex; align-items: center; justify-content: center; height: 70px; position: relative; }
-    .logo { height: 50px; width: auto; }
-    h1 { font-size: 1.1rem; margin-left: 10px; }
+    /* ENCABEZADO OPTIMIZADO: LOGO CENTRADO Y BOTONES LARGOS */
+    header { 
+      background: var(--primary); 
+      color: white; 
+      padding: 0 10px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; /* Centra el contenido */
+      height: 110px; 
+      position: relative; 
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      gap: 10px; /* Espacio entre botones y logo */
+    }
 
-    .container { padding: 10px; height: calc(100% - 80px); display: flex; flex-direction: column; }
-    
-    .action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 10px; }
-    .btn-action { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; color: white; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
-    .btn-ver-pedido { background: var(--secondary); }
+    .btn-header { 
+      flex: 1; /* Esto hace que los botones se estiren y se vean largos */
+      padding: 12px 5px; 
+      border: none; 
+      border-radius: 8px; 
+      font-weight: bold; 
+      color: white; 
+      font-size: 0.8rem; 
+      cursor: pointer; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 5px;
+      height: 50px; /* Altura cómoda para los botones */
+      white-space: nowrap;
+    }
+
     .btn-ver-ventas { background: #333; }
+    .btn-ver-pedido { background: var(--secondary); }
 
+    .logo-central {
+      height: 95px; /* Logo grande en el centro */
+      width: auto;
+      flex-shrink: 0; /* Evita que el logo se aplaste */
+    }
+
+    .container { padding: 10px; height: calc(100% - 120px); display: flex; flex-direction: column; }
+    
     .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 12px; overflow-y: auto; padding-bottom: 60px; -webkit-overflow-scrolling: touch; }
     
     .card { background: var(--card-bg); border-radius: 12px; padding: 10px; border: 1px solid #eee; height: 320px; display: flex; flex-direction: column; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: relative; overflow: hidden; }
@@ -30,6 +61,7 @@
     .controls { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 5px; }
     .controls button { background: var(--secondary); color: white; border: none; width: 32px; height: 32px; border-radius: 6px; font-weight: bold; font-size: 1.2rem; }
 
+    /* POPUPS (Funcionalidad intacta) */
     .popup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 1000; }
     .popup-content { background: white; padding: 1.5rem; border-radius: 20px; width: 90%; max-width: 380px; position: relative; max-height: 85vh; overflow-y: auto; }
     .invoice-area { border: 1px solid #ccc; padding: 15px; background: white; font-size: 0.9rem; color: #000; border-radius: 5px; margin-bottom: 10px; }
@@ -50,11 +82,6 @@
     .venta-item { border-bottom: 1px solid #ddd; padding: 8px 0; display: flex; justify-content: space-between; align-items: center; }
     .btn-pagar { background: #f59e0b; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
 
-    .pago-selector-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-    .btn-metodo { padding: 15px; border: none; border-radius: 10px; font-weight: bold; color: white; }
-    .yappy-btn { background: #0077ff; }
-    .efectivo-btn { background: #10b981; }
-
     #toast { visibility: hidden; min-width: 250px; background: #333; color: #fff; text-align: center; border-radius: 8px; padding: 15px; position: fixed; z-index: 2000; left: 50%; bottom: 40px; transform: translateX(-50%); }
     #toast.show { visibility: visible; }
   </style>
@@ -62,15 +89,12 @@
 <body>
 
   <header>
-    <img src="imagenes/logombirria.png" class="logo" alt="Master Birria">
-    <h1>Master Birria</h1>
+    <button class="btn-header btn-ver-ventas" onclick="abrirHistorial()">📦 VENTAS</button>
+    <img src="imagenes/logombirria.png" class="logo-central" alt="Logo">
+    <button class="btn-header btn-ver-pedido" onclick="generateInvoice()">🛒 PEDIDO</button>
   </header>
 
   <div class="container">
-    <div class="action-bar">
-        <button class="btn-action btn-ver-ventas" onclick="abrirHistorial()">📦 VER VENTAS</button>
-        <button class="btn-action btn-ver-pedido" onclick="generateInvoice()">🛒 VER PEDIDO</button>
-    </div>
     <div id="dashboard" class="products-grid"></div>
   </div>
 
@@ -114,9 +138,9 @@
     <div class="popup-content" style="max-width:300px; text-align:center;">
       <h3 style="margin-top:0;">¿Cómo pagó?</h3>
       <p id="infoOrdenPago" style="font-size:0.9rem; color:#666;"></p>
-      <div class="pago-selector-btns">
-        <button class="btn-metodo yappy-btn" onclick="procesarPagoEstado('yappy')">YAPPY</button>
-        <button class="btn-metodo efectivo-btn" onclick="procesarPagoEstado('efectivo')">EFECTIVO</button>
+      <div class="pago-selector-btns" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+        <button class="btn-pagar" style="background: #0077ff; padding: 15px; border-radius: 10px; font-size: 0.9rem;" onclick="procesarPagoEstado('yappy')">YAPPY</button>
+        <button class="btn-pagar" style="background: #10b981; padding: 15px; border-radius: 10px; font-size: 0.9rem;" onclick="procesarPagoEstado('efectivo')">EFECTIVO</button>
       </div>
       <button onclick="document.getElementById('popupSeleccionarMetodo').style.display='none'" style="margin-top:15px; background:none; border:none; color:gray; text-decoration:underline;">Regresar</button>
     </div>
@@ -210,8 +234,17 @@
 
       let html = `<div style="text-align:center"><strong>MASTER BIRRIA</strong><br><small>${fechaActual}</small></div><hr>`;
       products.forEach(p => {
-        if(p.options) p.options.forEach(o => { if(o.qty > 0) { html += `<div style="display:flex; justify-content:space-between"><span>${o.name} x${o.qty}</span> <span>$${(o.price*o.qty).toFixed(2)}</span></div>`; total += o.price*o.qty; has = true; }});
-        else if(p.qty > 0) { html += `<div style="display:flex; justify-content:space-between"><span>${p.name} x${p.qty}</span> <span>$${(p.price*p.qty).toFixed(2)}</span></div>`; total += p.price*p.qty; has = true; }
+        if(p.options) p.options.forEach(o => { 
+          if(o.qty > 0) { 
+            const nombreCompuesto = `${p.name} (${o.name})`;
+            html += `<div style="display:flex; justify-content:space-between"><span>${nombreCompuesto} x${o.qty}</span> <span>$${(o.price*o.qty).toFixed(2)}</span></div>`; 
+            total += o.price*o.qty; has = true; 
+          }
+        });
+        else if(p.qty > 0) { 
+          html += `<div style="display:flex; justify-content:space-between"><span>${p.name} x${p.qty}</span> <span>$${(p.price*p.qty).toFixed(2)}</span></div>`; 
+          total += p.price*p.qty; has = true; 
+        }
       });
       if(!has) return showToast("⚠️ Selecciona productos primero");
       html += `<hr><div style="text-align:right"><strong>TOTAL: $${total.toFixed(2)}</strong></div>`;
@@ -241,7 +274,12 @@
       const fechaStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
       let detalle = "";
       products.forEach(p => {
-        if(p.options) p.options.forEach(o => { if(o.qty > 0) detalle += `*•* ${o.name}\n  ${o.qty} x $${o.price.toFixed(2)} = $${(o.price*o.qty).toFixed(2)}\n`; });
+        if(p.options) p.options.forEach(o => { 
+          if(o.qty > 0) {
+            const nombreCompuesto = `${p.name} (${o.name})`;
+            detalle += `*•* ${nombreCompuesto}\n  ${o.qty} x $${o.price.toFixed(2)} = $${(o.price*o.qty).toFixed(2)}\n`; 
+          }
+        });
         else if(p.qty > 0) detalle += `*•* ${p.name}\n  ${p.qty} x $${p.price.toFixed(2)} = $${(p.price*p.qty).toFixed(2)}\n`;
       });
 
